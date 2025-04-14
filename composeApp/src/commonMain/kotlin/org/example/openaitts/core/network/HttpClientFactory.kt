@@ -1,16 +1,19 @@
 package org.example.openaitts.core.network
 
+import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.headers
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.util.logging.Logger
 import kotlinx.serialization.json.Json
 import org.example.openaitts.BuildKonfig.API_KEY
 
@@ -33,6 +36,15 @@ object HttpClientFactory {
             )
 
             install(HttpCache)
+
+            install(Logging) {
+                logger = object : Logger {
+                    override fun log(message: String) {
+                        Napier.v(message)
+                    }
+                }
+                level = LogLevel.HEADERS
+            }
 
             defaultRequest {
                 headers { append("Authorization", "Bearer $API_KEY") }

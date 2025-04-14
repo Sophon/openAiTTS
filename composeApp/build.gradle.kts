@@ -67,6 +67,10 @@ kotlin {
             implementation(libs.coil.core)
             implementation(libs.coil.svg)
             implementation(libs.coil.network.ktor)
+
+            implementation(libs.ktor.logging)
+
+            implementation(libs.napier)
         }
 
         iosMain.dependencies {

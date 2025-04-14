@@ -36,6 +36,7 @@ suspend inline fun <reified T> HttpResponse.toResult(): Result<T, DataError.Remo
                 Result.Error(DataError.Remote.SERIALIZATION_ERROR)
             }
         }
+        400 -> Result.Error(DataError.Remote.BAD_REQUEST)
         408 -> Result.Error(DataError.Remote.REQUEST_TIMEOUT)
         429 -> Result.Error(DataError.Remote.TOO_MANY_REQUESTS)
         in 500..599 -> Result.Error(DataError.Remote.SERVER_ERROR)

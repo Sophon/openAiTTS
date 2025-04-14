@@ -24,6 +24,7 @@ assertK = "0.25"
 turbine = "0.7.0"
 core-ktx = "1.7.0"
 buildkonfig = "0.17.0"
+napier = "2.6.1"
 
 
 [libraries]
@@ -45,6 +46,7 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 ktor-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
 ktor-ios = { module = "io.ktor:ktor-client-ios", version.ref = "ktor" }
+ktor-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 
 # Other Libraries
 kotlin-date-time = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlin-date-time" }
@@ -73,6 +75,9 @@ coil-svg = { module = "io.coil-kt.coil3:coil-svg", version.ref = "coil-compose" 
 
 # Biometry Libraries
 biometric = { module = "androidx.biometric:biometric", version.ref = "biometry" }
+
+#Napier
+napier = { module = "io.github.aakira:napier", version.ref = "napier" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
