@@ -3,9 +3,11 @@ package org.example.openaitts.feature.chat
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -16,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.example.openaitts.theme.localAppColorPalette
@@ -28,6 +29,7 @@ fun ChatScreen(modifier: Modifier = Modifier) {
     val state by vm.state.collectAsStateWithLifecycle()
 
     Column(
+        verticalArrangement = Arrangement.SpaceBetween,
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
@@ -38,7 +40,8 @@ fun ChatScreen(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier
                 .padding(16.dp)
-                .fillMaxSize(.5f)
+                .fillMaxWidth()
+                .fillMaxHeight(.75f)
                 .border(border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground))
         )
 
@@ -47,7 +50,8 @@ fun ChatScreen(modifier: Modifier = Modifier) {
             onChangeQuestion = vm::onChangeQuestion,
             onSendClick = vm::sendMessage,
             isEnabled = state.isButtonEnabled,
-            modifier = Modifier.fillMaxSize(.5f)
+            modifier = Modifier
+                .fillMaxWidth()
         )
     }
 }

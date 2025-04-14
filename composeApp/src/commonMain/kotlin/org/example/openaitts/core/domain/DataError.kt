@@ -8,5 +8,6 @@ sealed interface DataError: Error {
         NO_INTERNET,
         SERVER_ERROR,
         SERIALIZATION_ERROR,
+        BAD_REQUEST,
     }
 }
