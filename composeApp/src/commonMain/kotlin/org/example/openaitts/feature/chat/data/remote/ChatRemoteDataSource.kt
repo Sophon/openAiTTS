@@ -21,7 +21,9 @@ class ChatRemoteDataSourceImpl(
 ): ChatRemoteDataSource {
     override suspend fun sendMessage(request: ChatRequestDto): Result<ChatResponseDto, DataError.Remote> {
         return safeCall {
-            httpClient.post(BASE_URL) { setBody(request) }
+            httpClient.post(CHAT_URL) { setBody(request) }
         }
     }
 }
+
+private const val CHAT_URL = "$BASE_URL/chat/completions"
