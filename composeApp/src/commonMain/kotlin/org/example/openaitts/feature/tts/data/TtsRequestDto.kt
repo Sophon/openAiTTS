@@ -1,4 +1,4 @@
-package org.example.openaitts.feature.tts.data.dto
+package org.example.openaitts.feature.tts.data
 
 import kotlinx.serialization.Serializable
 

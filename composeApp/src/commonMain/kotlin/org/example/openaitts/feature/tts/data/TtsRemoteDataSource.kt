@@ -7,7 +7,6 @@ import org.example.openaitts.core.data.BASE_URL
 import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.Result
 import org.example.openaitts.core.network.safeCall
-import org.example.openaitts.feature.tts.data.dto.TtsRequestDto
 
 interface TtsRemoteDataSource {
     suspend fun sendMessage(request: TtsRequestDto): Result<ByteArray, DataError.Remote>

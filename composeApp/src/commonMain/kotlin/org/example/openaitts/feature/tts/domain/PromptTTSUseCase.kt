@@ -4,7 +4,7 @@ import org.example.openaitts.core.data.MODEL_TTS
 import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.Result
 import org.example.openaitts.feature.tts.data.TtsRemoteDataSource
-import org.example.openaitts.feature.tts.data.dto.TtsRequestDto
+import org.example.openaitts.feature.tts.data.TtsRequestDto
 
 class PromptTTSUseCase(
     private val dataSource: TtsRemoteDataSource,
