@@ -2,17 +2,21 @@ package org.example.openaitts.feature.conversation.data
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import org.example.openaitts.core.data.BASE_URL
 import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.Result
 import org.example.openaitts.core.network.safeCall
+import org.example.openaitts.feature.conversation.data.dto.SessionRequestDto
 import org.example.openaitts.feature.conversation.data.dto.SessionResponseDto
 
 class ConversationRemoteDataSource(
     private val httpClient: HttpClient,
 ) {
-    suspend fun createSession(): Result<SessionResponseDto, DataError.Remote> {
-        return safeCall { httpClient.post(SESSION_URL) }
+    suspend fun createSession(requestDto: SessionRequestDto): Result<SessionResponseDto, DataError.Remote> {
+        return safeCall {
+            httpClient.post(SESSION_URL) { setBody(requestDto) }
+        }
     }
 
     //TODO: send message

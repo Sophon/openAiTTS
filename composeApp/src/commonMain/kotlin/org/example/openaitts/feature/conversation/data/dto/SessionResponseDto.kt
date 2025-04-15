@@ -13,12 +13,12 @@ data class SessionResponseDto(
     val voice: String,
     @SerialName("input_audio_format") val inputAudioFormat: String,
     @SerialName("output_audio_format") val outputAudioFormat: String,
-    @SerialName("input_audio_transcription") val inputAudioTranscription: InputAudioTranscription,
+    @SerialName("input_audio_transcription") val inputAudioTranscription: InputAudioTranscription?,
     @SerialName("turn_detection") val turnDetection: TurnDetection?, // Replace `Any?` if a structure is known
     val tools: List<Tool>,
     @SerialName("tool_choice") val toolChoice: String,
     val temperature: Double,
-    @SerialName("max_response_output_tokens") val maxResponseOutputTokens: Int,
+    @SerialName("max_response_output_tokens") val maxResponseOutputTokens: String,
     @SerialName("client_secret") val clientSecret: ClientSecret,
 ) {
     @Serializable

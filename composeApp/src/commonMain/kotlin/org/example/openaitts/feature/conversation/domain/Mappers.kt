@@ -13,7 +13,7 @@ internal fun SessionResponseDto.toDomain(): Session {
         outputAudioFormat = this.outputAudioFormat.toDomainAudioFormat(),
         turnDetection = this.turnDetection?.toDomain(),
         temperature = this.temperature,
-        maxResponseOutputTokens = this.maxResponseOutputTokens,
+        maxResponseOutputTokens = this.maxResponseOutputTokens.toDomainMaxResponseOutput(),
         clientSecret = this.clientSecret.toDomain(),
     )
 }
@@ -50,6 +50,20 @@ internal fun SessionResponseDto.ClientSecret.toDomain(): Session.ClientSecret {
         value = this.value,
         expiresAt = this.expiresAt,
     )
+}
+
+internal fun String.toDomainMaxResponseOutput(): Int {
+    return when (this) {
+        "inf" -> Int.MAX_VALUE
+        else -> {
+            try {
+                this.toInt()
+            } catch (e: NumberFormatException) {
+                Napier.e(message = "MaxResponseOutput: ${e.message}", tag = TAG)
+                Int.MAX_VALUE
+            }
+        }
+    }
 }
 
 private const val TAG = "ConversationMappers"
