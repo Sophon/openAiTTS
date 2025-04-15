@@ -56,7 +56,6 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.bundles.ktor)
             implementation(libs.ktor.logging)
-            implementation(libs.sqlite.bundled)
 
             api(libs.koin.core)
             implementation(libs.koin.compose)
