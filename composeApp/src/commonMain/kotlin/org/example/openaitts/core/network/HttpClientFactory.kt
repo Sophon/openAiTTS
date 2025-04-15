@@ -10,6 +10,7 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.headers
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -45,6 +46,8 @@ object HttpClientFactory {
                 }
                 level = LogLevel.HEADERS
             }
+
+            install(WebSockets)
 
             defaultRequest {
                 headers { append("Authorization", "Bearer $API_KEY") }
