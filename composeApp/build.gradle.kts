@@ -68,8 +68,6 @@ kotlin {
             implementation(libs.coil.svg)
             implementation(libs.coil.network.ktor)
 
-            implementation(libs.okio)
-
             implementation(libs.napier)
         }
 

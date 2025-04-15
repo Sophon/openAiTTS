@@ -47,7 +47,6 @@ val sharedModule = module {
     //region TTS
     viewModel { TtsViewModel(get(), get()) }
     singleOf(::TtsRemoteDataSourceImpl).bind<TtsRemoteDataSource>()
-    singleOf(::AudioFileManager)
     singleOf(::PromptTTSUseCase)
     //endregion
 }
