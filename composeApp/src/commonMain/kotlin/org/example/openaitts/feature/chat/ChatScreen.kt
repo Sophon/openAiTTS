@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.example.openaitts.core.ui.ChatField
 import org.example.openaitts.theme.localAppColorPalette
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -58,30 +59,3 @@ fun ChatScreen(modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-private fun ChatField(
-    question: String?,
-    onChangeQuestion: (String) -> Unit,
-    onSendClick: () -> Unit,
-    isEnabled: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-            .padding(16.dp),
-    ) {
-        TextField(
-            value = question ?: "",
-            onValueChange = onChangeQuestion,
-        )
-
-        Button(
-            onClick = onSendClick,
-            colors = ButtonDefaults.buttonColors().copy(containerColor = localAppColorPalette.current.profitGreen),
-            enabled = isEnabled
-        ) {
-            Text(text = "Send")
-        }
-    }
-}

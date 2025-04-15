@@ -6,6 +6,12 @@ import org.example.openaitts.feature.chat.ChatViewModel
 import org.example.openaitts.feature.chat.data.remote.ChatRemoteDataSource
 import org.example.openaitts.feature.chat.data.remote.ChatRemoteDataSourceImpl
 import org.example.openaitts.feature.chat.domain.SendMessageUseCase
+import org.example.openaitts.feature.tts.data.TtsRemoteDataSource
+import org.example.openaitts.feature.tts.data.TtsRemoteDataSourceImpl
+import org.example.openaitts.feature.tts.domain.AudioFileManager
+import org.example.openaitts.feature.tts.domain.AudioPlayer
+import org.example.openaitts.feature.tts.domain.PromptTTSUseCase
+import org.example.openaitts.feature.tts.ui.TtsViewModel
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -37,5 +43,12 @@ val sharedModule = module {
     viewModel { ChatViewModel(get()) }
     singleOf(::SendMessageUseCase)
     singleOf(::ChatRemoteDataSourceImpl).bind<ChatRemoteDataSource>()
+    //endregion
+
+    //region TTS
+    viewModel { TtsViewModel(get(), get()) }
+    singleOf(::TtsRemoteDataSourceImpl).bind<TtsRemoteDataSource>()
+    singleOf(::AudioFileManager)
+    singleOf(::PromptTTSUseCase)
     //endregion
 }

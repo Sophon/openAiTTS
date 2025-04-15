@@ -4,32 +4,28 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.openaitts.core.domain.Result
+import org.example.openaitts.feature.tts.domain.AudioFileManager
 import org.example.openaitts.feature.tts.domain.PromptTTSUseCase
 
 class TtsViewModel(
     private val promptTTSUseCase: PromptTTSUseCase,
+    private val audioFileManager: AudioFileManager,
 ): ViewModel() {
     private val _state = MutableStateFlow(TtsViewState())
-    val state = _state
-        .onStart {}
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = TtsViewState(),
-        )
+    val state: StateFlow<TtsViewState> = _state
 
     fun onSendMessage() {
-        viewModelScope.launch {
+        _state.update { it.copy(isResponseAvailable = false) }
 
+        viewModelScope.launch {
             when (val response = promptTTSUseCase.execute(_state.value.question ?: "")) {
                 is Result.Success -> {
-                    val a: ByteArray = response.data
+                    audioFileManager.save(response.data)
+                    _state.update { it.copy(isResponseAvailable = true) }
                 }
                 is Result.Error -> {
                     response.error.toString().let { error ->
@@ -39,5 +35,17 @@ class TtsViewModel(
                 }
             }
         }
+    }
+
+    fun onChangeQuestion(message: String) {
+        _state.update { it.copy(question = message) }
+    }
+
+    fun stopPlayingResponse() {
+        audioFileManager.stop()
+    }
+
+    fun playResponse() {
+        audioFileManager.play()
     }
 }
