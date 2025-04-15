@@ -9,7 +9,6 @@ import org.example.openaitts.feature.chat.domain.SendMessageUseCase
 import org.example.openaitts.feature.tts.data.TtsRemoteDataSource
 import org.example.openaitts.feature.tts.data.TtsRemoteDataSourceImpl
 import org.example.openaitts.feature.tts.domain.AudioFileManager
-import org.example.openaitts.feature.tts.domain.AudioPlayer
 import org.example.openaitts.feature.tts.domain.PromptTTSUseCase
 import org.example.openaitts.feature.tts.ui.TtsViewModel
 import org.koin.core.KoinApplication
