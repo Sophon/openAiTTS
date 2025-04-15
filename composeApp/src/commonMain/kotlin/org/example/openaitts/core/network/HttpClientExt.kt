@@ -1,5 +1,6 @@
 package org.example.openaitts.core.network
 
+import io.github.aakira.napier.Napier
 import io.ktor.client.call.body
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.statement.HttpResponse
@@ -21,6 +22,7 @@ suspend inline fun <reified T> safeCall(
         return Result.Error(DataError.Remote.NO_INTERNET)
     } catch (e: Exception) {
         coroutineContext.ensureActive()
+        Napier.e { e.message ?: "" }
         return Result.Error(DataError.Remote.UNKNOWN)
     }
 
