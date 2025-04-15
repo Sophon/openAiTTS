@@ -55,6 +55,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.bundles.ktor)
+            implementation(libs.ktor.logging)
             implementation(libs.sqlite.bundled)
 
             api(libs.koin.core)
@@ -68,7 +69,7 @@ kotlin {
             implementation(libs.coil.svg)
             implementation(libs.coil.network.ktor)
 
-            implementation(libs.ktor.logging)
+            implementation(libs.okio)
 
             implementation(libs.napier)
         }
@@ -90,11 +91,11 @@ kotlin {
 }
 
 android {
-    namespace = "org.example.udemykmp"
+    namespace = "org.example.openaitts"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "org.example.udemykmp"
+        applicationId = "org.example.openaitts"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
