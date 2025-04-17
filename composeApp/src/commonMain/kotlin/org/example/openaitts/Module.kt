@@ -8,6 +8,7 @@ import org.example.openaitts.feature.chat.data.remote.ChatRemoteDataSourceImpl
 import org.example.openaitts.feature.chat.domain.SendMessageUseCase
 import org.example.openaitts.feature.conversation.data.ConversationRemoteDataSource
 import org.example.openaitts.feature.conversation.domain.ConversationUseCase
+import org.example.openaitts.feature.conversation.domain.SendConversationMessageUseCase
 import org.example.openaitts.feature.conversation.ui.ConversationViewModel
 import org.example.openaitts.feature.tts.data.TtsRemoteDataSource
 import org.example.openaitts.feature.tts.data.TtsRemoteDataSourceImpl
@@ -54,8 +55,9 @@ val sharedModule = module {
     //endregion
 
     //region Conversation
-    viewModel { ConversationViewModel(get()) }
+    viewModel { ConversationViewModel(get(), get()) }
     singleOf(::ConversationRemoteDataSource)
     singleOf(::ConversationUseCase)
+    singleOf(::SendConversationMessageUseCase)
     //endregion
 }

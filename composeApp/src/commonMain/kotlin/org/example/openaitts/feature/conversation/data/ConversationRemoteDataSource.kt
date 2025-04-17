@@ -2,11 +2,20 @@ package org.example.openaitts.feature.conversation.data
 
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.webSocket
+import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.websocket.Frame
+import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.readText
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapNotNull
 import org.example.openaitts.core.data.BASE_URL
 import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.EmptyResult
@@ -20,10 +29,10 @@ class ConversationRemoteDataSource(
     private val httpClient: HttpClient,
 ) {
     private lateinit var session: SessionResponseDto
+    private var webSocketSession: WebSocketSession? = null
 
     suspend fun createSession(requestDto: SessionRequestDto): EmptyResult<DataError.Remote> {
         initializeSession(requestDto).let { if (it is Result.Error) return it }
-        establishWebSocketConnection()
 
         return Result.Success(Unit)
     }
@@ -48,25 +57,37 @@ class ConversationRemoteDataSource(
         return result
     }
 
-    private suspend fun establishWebSocketConnection() {
+    suspend fun establishWebSocketConnection(): Result<Flow<String>, DataError.Remote> {
         val url = REALTIME_WEBSOCKET_URL.replace("SESSION_ID", session.id)
-        httpClient.webSocket(url) {
-            val message = MessageDto(text = "are you ready?")
-            send(Frame.Text(message.toString()))
+        try {
+            webSocketSession = httpClient.webSocketSession(urlString = url)
 
-            for (frame in incoming) {
-                when (frame) {
-                    is Frame.Text -> {
-                        Napier.d(frame.readText(), tag = TAG)
-                    }
-                    is Frame.Binary -> Napier.d("binary received", tag = TAG)
-                    else -> Unit
-                }
+            val flow = flow {
+                val messages = webSocketSession!!
+                    .incoming
+                    .consumeAsFlow()
+                    .filterIsInstance<Frame.Text>()
+                    .mapNotNull { it.readText() }
+
+                emitAll(messages)
             }
+
+            return Result.Success(flow)
+        } catch (e: Exception) {
+            Napier.e(tag = TAG) { e.message.toString() }
+            return Result.Error(DataError.Remote.UNKNOWN)
         }
     }
 
-    //TODO: send message
+    suspend fun send(message: MessageDto): EmptyResult<DataError.Remote> {
+        try {
+            webSocketSession?.outgoing?.send(Frame.Text(message.text))
+            return Result.Success(Unit)
+        } catch (e: Exception) {
+            Napier.e(tag = TAG) { e.message.toString() }
+            return Result.Error(DataError.Remote.UNKNOWN)
+        }
+    }
 }
 
 private const val SESSION_URL = "$BASE_URL/realtime/sessions"
