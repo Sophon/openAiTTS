@@ -2,8 +2,6 @@ package org.example.openaitts.feature.conversation.data
 
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
-import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
-import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
