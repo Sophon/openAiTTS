@@ -41,7 +41,7 @@ object HttpClientFactory {
             install(Logging) {
                 logger = object : Logger {
                     override fun log(message: String) {
-                        Napier.v(message)
+                        Napier.v(message = message, tag = TAG)
                     }
                 }
                 level = LogLevel.HEADERS
@@ -58,3 +58,4 @@ object HttpClientFactory {
 }
 
 private const val TIMEOUT_IN_MILIS = 20_000L
+private const val TAG = "Ktor"

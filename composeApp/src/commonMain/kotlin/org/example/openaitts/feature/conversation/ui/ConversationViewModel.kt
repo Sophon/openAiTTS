@@ -17,24 +17,13 @@ class ConversationViewModel(
     private val _state = MutableStateFlow(ConversationViewState())
     val state = _state
         .onStart {
-            initializeSession()
+            conversationUseCase.startRealTimeSession()
         }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = ConversationViewState(),
         )
-
-    private suspend fun initializeSession() {
-        when (val response = conversationUseCase.startSession()) {
-            is Result.Success -> {
-                _state.update { it.copy(session = response.data) }
-            }
-            is Result.Error -> {
-                Napier.e(message = response.error.toString(), tag = TAG)
-            }
-        }
-    }
 }
 
 private const val TAG = "ConversationViewModel"
