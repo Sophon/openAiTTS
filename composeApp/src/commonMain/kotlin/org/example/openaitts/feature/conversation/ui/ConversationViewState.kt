@@ -6,5 +6,5 @@ data class ConversationViewState(
     val error: String? = null,
     val isLoading: Boolean = false,
 
-    val session: Session? = null,
+    val message: String? = null,
 )

@@ -57,23 +57,25 @@ class ConversationRemoteDataSource(
 
     suspend fun establishWebSocketConnection(): Result<Flow<String>, DataError.Remote> {
         val url = REALTIME_WEBSOCKET_URL.replace("SESSION_ID", session.id)
-        try {
-            webSocketSession = httpClient.webSocketSession(urlString = url)
+        webSocketSession = httpClient.webSocketSession(urlString = url)
 
+        Napier.d(tag = "ktor") { "webSocketSession: $webSocketSession" }
+
+        return if (webSocketSession == null) {
+            Result.Error(DataError.Remote.UNKNOWN)
+        } else {
             val flow = flow {
                 val messages = webSocketSession!!
                     .incoming
                     .consumeAsFlow()
                     .filterIsInstance<Frame.Text>()
-                    .mapNotNull { it.readText() }
+                    .mapNotNull {
+                        it.readText()
+                    }
 
                 emitAll(messages)
             }
-
-            return Result.Success(flow)
-        } catch (e: Exception) {
-            Napier.e(tag = TAG) { e.message.toString() }
-            return Result.Error(DataError.Remote.UNKNOWN)
+            Result.Success(flow)
         }
     }
 

@@ -6,9 +6,11 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.openaitts.core.domain.onError
 import org.example.openaitts.core.domain.onSuccess
@@ -30,22 +32,25 @@ class ConversationViewModel(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = ConversationViewState(),
         )
-    private val _receivedMessageEvents = Channel<Message>(capacity = Channel.BUFFERED)
-    val receivedMessageEvents = _receivedMessageEvents.receiveAsFlow()
 
     fun sendMessage(message: String) {
         viewModelScope.launch {
             sendMessageUseCase.sendMessage(message)
-                .onError { Napier.e(tag = TAG) { it.toString() } }
+                .onSuccess {
+                    Napier.d(tag = TAG) { "success" }
+                }
+                .onError {
+                    Napier.e(tag = TAG) { it.toString() }
+                }
         }
     }
 
     private suspend fun connect() {
         conversationUseCase.establishConnection()
             .onSuccess { flow ->
-                flow.collect { _receivedMessageEvents.send(Message(role = "TODO", content = it)) }
-
-                sendMessage("who is snow white?")
+                flow.collect { message ->
+                    _state.update { it.copy(message = message) }
+                }
             }
     }
 }
