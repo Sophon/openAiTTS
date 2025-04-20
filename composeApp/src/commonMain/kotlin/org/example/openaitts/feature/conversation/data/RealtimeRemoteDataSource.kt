@@ -25,6 +25,7 @@ class RealtimeRemoteDataSource(
     private val httpClient: HttpClient,
 ) {
     private var webSocketSession: WebSocketSession? = null
+    private val json = Json { encodeDefaults = true }
 
     suspend fun initializeSession(): Flow<String> {
         val url = "$REALTIME_WEBSOCKET_URL?model=$MODEL_REALTIME"
@@ -50,7 +51,7 @@ class RealtimeRemoteDataSource(
 
     suspend fun send(message: MessageDto): EmptyResult<DataError.Remote> {
         try {
-            val textMessage = Json.encodeToString(message)
+            val textMessage = json.encodeToString(message)
             webSocketSession?.send(Frame.Text(textMessage))
             return Result.Success(Unit)
         } catch (e: Exception) {

@@ -44,7 +44,7 @@ object HttpClientFactory {
                         Napier.v(message = message, tag = TAG)
                     }
                 }
-                level = LogLevel.HEADERS
+                level = LogLevel.ALL
             }
 
             install(WebSockets)

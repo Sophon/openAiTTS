@@ -1,5 +1,6 @@
 package org.example.openaitts.feature.conversation.data.dto
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -11,18 +12,18 @@ data class MessageDto(
     data class Item(
         val type: Type,
         val role: Role,
-        val content: Content,
+        val content: List<Content>,
     ) {
-        enum class Type(val value: String) {
-            MESSAGE("message"),
-            FUNCTION_CALL("function_call"),
-            FUNCTION_CALL_OUTPUT("function_call_output"),
+        enum class Type {
+            @SerialName("message") MESSAGE,
+            @SerialName("function_call") FUNCTION_CALL,
+            @SerialName("function_call_output") FUNCTION_CALL_OUTPUT,
         }
 
-        enum class Role(val value: String) {
-            USER("user"),
-            ASSISTANT("assistant"),
-            SYSTEM("system"),
+        enum class Role {
+            @SerialName("user") USER,
+            @SerialName("assistant") ASSISTANT,
+            @SerialName("system") SYSTEM,
         }
 
         @Serializable
@@ -30,11 +31,11 @@ data class MessageDto(
             val type: Type,
             val text: String,
         ) {
-            enum class Type(val value: String) {
-                INPUT_TEXT("input_text"),
-                INPUT_AUDIO("input_audio"),
-                ITEM_REFERENCE("item_reference"),
-                TEXT("text"),
+            enum class Type {
+                @SerialName("input_text") INPUT_TEXT,
+                @SerialName("input_audio") INPUT_AUDIO,
+                @SerialName("item_reference") ITEM_REFERENCE,
+                @SerialName("text") TEXT,
             }
         }
     }

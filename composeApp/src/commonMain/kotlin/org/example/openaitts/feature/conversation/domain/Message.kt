@@ -3,7 +3,7 @@ package org.example.openaitts.feature.conversation.domain
 data class Message(
     val type: Type,
     val role: Role,
-    val content: Content,
+    val content: List<Content>,
 ) {
     enum class Type {
         MESSAGE,

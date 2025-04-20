@@ -8,10 +8,12 @@ internal fun Message.toDto(): MessageDto {
         item = MessageDto.Item(
             type = type.toDto(),
             role = role.toDto(),
-            content = MessageDto.Item.Content(
-                type = this.content.type.toDto(),
-                text = content.text,
-            )
+            content = content.map {
+                MessageDto.Item.Content(
+                    type = it.type.toDto(),
+                    text = it.text,
+                )
+            }
         )
     )
 }
@@ -47,10 +49,12 @@ internal fun MessageDto.toDomain(): Message {
     return Message(
         type = item.type.toDomain(),
         role = item.role.toDomain(),
-        content = Message.Content(
-            type = item.content.type.toDomain(),
-            text = item.content.text,
-        )
+        content = item.content.map {
+            Message.Content(
+                type = it.type.toDomain(),
+                text = it.text,
+            )
+        }
     )
 }
 

@@ -12,9 +12,11 @@ class SendConversationMessageUseCase(
         val messageObject = Message(
             type = Message.Type.MESSAGE,
             role = Message.Role.USER,
-            content = Message.Content(
-                type = Message.Content.Type.INPUT_TEXT,
-                text = message,
+            content = listOf(
+                Message.Content(
+                    type = Message.Content.Type.INPUT_TEXT,
+                    text = message,
+                )
             )
         ).toDto()
 
