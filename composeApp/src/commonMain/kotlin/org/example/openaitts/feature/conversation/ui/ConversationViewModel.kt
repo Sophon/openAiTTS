@@ -36,21 +36,14 @@ class ConversationViewModel(
     fun sendMessage(message: String) {
         viewModelScope.launch {
             sendMessageUseCase.sendMessage(message)
-                .onSuccess {
-                    Napier.d(tag = TAG) { "success" }
-                }
-                .onError {
-                    Napier.e(tag = TAG) { it.toString() }
-                }
+                .onError { Napier.e(tag = TAG) { it.toString() } }
         }
     }
 
     private suspend fun connect() {
         conversationUseCase.establishConnection()
-            .onSuccess { flow ->
-                flow.collect { message ->
-                    _state.update { it.copy(message = message) }
-                }
+            .collectLatest { message ->
+                _state.update { it.copy(message = message) }
             }
     }
 }

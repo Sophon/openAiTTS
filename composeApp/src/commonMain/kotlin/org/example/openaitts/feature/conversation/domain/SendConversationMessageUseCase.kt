@@ -2,13 +2,22 @@ package org.example.openaitts.feature.conversation.domain
 
 import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.EmptyResult
-import org.example.openaitts.feature.conversation.data.ConversationRemoteDataSource
-import org.example.openaitts.feature.conversation.data.dto.MessageDto
+import org.example.openaitts.feature.conversation.data.RealtimeRemoteDataSource
+import org.example.openaitts.feature.conversation.data.toDto
 
 class SendConversationMessageUseCase(
-    private val remoteDataSource: ConversationRemoteDataSource,
+    private val remoteDataSource: RealtimeRemoteDataSource,
 ) {
     suspend fun sendMessage(message: String): EmptyResult<DataError.Remote> {
-        return remoteDataSource.send(MessageDto(text = message))
+        val messageObject = Message(
+            type = Message.Type.MESSAGE,
+            role = Message.Role.USER,
+            content = Message.Content(
+                type = Message.Content.Type.INPUT_TEXT,
+                text = message,
+            )
+        ).toDto()
+
+        return remoteDataSource.send(messageObject)
     }
 }

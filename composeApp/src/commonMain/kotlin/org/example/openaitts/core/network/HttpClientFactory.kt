@@ -51,7 +51,6 @@ object HttpClientFactory {
 
             defaultRequest {
                 headers { append("Authorization", "Bearer $API_KEY") }
-                headers { append("openai-beta", "realtime=v1") }
                 contentType(ContentType.Application.Json)
             }
         }

@@ -1,9 +1,13 @@
 package org.example.openaitts.feature.conversation.data.dto
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class MessageDto(
     val type: String = "conversation.item.create",
     val item: Item,
 ) {
+    @Serializable
     data class Item(
         val type: Type,
         val role: Role,
@@ -21,6 +25,7 @@ data class MessageDto(
             SYSTEM("system"),
         }
 
+        @Serializable
         data class Content(
             val type: Type,
             val text: String,
