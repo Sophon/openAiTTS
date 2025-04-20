@@ -6,13 +6,12 @@ import org.example.openaitts.feature.chat.ChatViewModel
 import org.example.openaitts.feature.chat.data.remote.ChatRemoteDataSource
 import org.example.openaitts.feature.chat.data.remote.ChatRemoteDataSourceImpl
 import org.example.openaitts.feature.chat.domain.SendMessageUseCase
-import org.example.openaitts.feature.conversation.data.ConversationRemoteDataSource
+import org.example.openaitts.feature.conversation.data.RealtimeRemoteDataSource
 import org.example.openaitts.feature.conversation.domain.ConversationUseCase
 import org.example.openaitts.feature.conversation.domain.SendConversationMessageUseCase
 import org.example.openaitts.feature.conversation.ui.ConversationViewModel
 import org.example.openaitts.feature.tts.data.TtsRemoteDataSource
 import org.example.openaitts.feature.tts.data.TtsRemoteDataSourceImpl
-import org.example.openaitts.feature.tts.domain.AudioFileManager
 import org.example.openaitts.feature.tts.domain.PromptTTSUseCase
 import org.example.openaitts.feature.tts.ui.TtsViewModel
 import org.koin.core.KoinApplication
@@ -56,7 +55,7 @@ val sharedModule = module {
 
     //region Conversation
     viewModel { ConversationViewModel(get(), get()) }
-    singleOf(::ConversationRemoteDataSource)
+    singleOf(::RealtimeRemoteDataSource)
     singleOf(::ConversationUseCase)
     singleOf(::SendConversationMessageUseCase)
     //endregion
