@@ -19,6 +19,7 @@ import org.example.openaitts.core.data.REALTIME_WEBSOCKET_URL
 import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.EmptyResult
 import org.example.openaitts.core.domain.Result
+import org.example.openaitts.feature.conversation.data.dto.CreateResponseRequestDto
 import org.example.openaitts.feature.conversation.data.dto.MessageDto
 
 class RealtimeRemoteDataSource(
@@ -38,6 +39,7 @@ class RealtimeRemoteDataSource(
                 .incoming
                 .consumeAsFlow()
                 .mapNotNull {
+                    //TODO: buffer stuff, wait for "response.done"
                     when (it) {
                         is Frame.Text -> it.readText()
                         is Frame.Binary -> "binary"
@@ -57,6 +59,17 @@ class RealtimeRemoteDataSource(
         } catch (e: Exception) {
             Napier.e(tag = TAG) { e.message.toString() }
             return Result.Error(DataError.Remote.UNKNOWN)
+        }
+    }
+
+    suspend fun requestResponse(responseRequestDto: CreateResponseRequestDto): EmptyResult<DataError.Remote> {
+        return try {
+            val request = json.encodeToString(responseRequestDto)
+            webSocketSession?.send(Frame.Text(request))
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Napier.e(tag = TAG) { e.message.toString() }
+            Result.Error(DataError.Remote.UNKNOWN)
         }
     }
 }
