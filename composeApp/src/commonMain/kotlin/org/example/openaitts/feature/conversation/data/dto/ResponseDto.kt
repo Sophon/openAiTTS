@@ -4,7 +4,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.example.openaitts.feature.conversation.domain.models.EventType
 import org.example.openaitts.feature.conversation.domain.models.MessageItem
-import org.example.openaitts.feature.conversation.domain.models.Modality
 
 @Serializable
 data class ResponseDto(
