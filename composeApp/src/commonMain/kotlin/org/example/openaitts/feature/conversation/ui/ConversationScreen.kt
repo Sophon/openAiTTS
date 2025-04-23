@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.example.openaitts.feature.conversation.domain.models.Role
@@ -77,11 +78,12 @@ private fun MessagesField(
 ) {
     val listState = rememberLazyListState()
     LaunchedEffect(messages.size) {
-        listState.animateScrollToItem(index = messages.lastIndex)
+        if (messages.isNotEmpty()) listState.animateScrollToItem(index = messages.lastIndex)
     }
 
     LazyColumn(
         contentPadding = WindowInsets.systemBars.asPaddingValues(),
+        state = listState,
         modifier = modifier.fillMaxWidth()
     ) {
         items(messages) { message ->
@@ -112,6 +114,7 @@ private fun ChatBubble(
         text = message.content.text,
         color = MaterialTheme.colorScheme.onBackground,
         style = MaterialTheme.typography.bodyMedium,
+        textAlign = if (message.role == Role.USER) TextAlign.End else TextAlign.Start,
         modifier = modifier
             .padding(8.dp)
             .background(MaterialTheme.colorScheme.primaryContainer)

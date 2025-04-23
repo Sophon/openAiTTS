@@ -64,6 +64,7 @@ class ConversationViewModel(
                 }
             }
             _state.update { it.copy(isLoading = false) }
+            _typedQuery.update { "" }
         }
     }
 
