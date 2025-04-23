@@ -1,23 +1,38 @@
 package org.example.openaitts.feature.conversation.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.example.openaitts.feature.conversation.domain.models.Role
@@ -34,32 +49,42 @@ fun ConversationScreen(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .imePadding()
     ) {
-        Button(
-            onClick = { vm.sendMessage("who is snow white?") },
-            modifier = Modifier
-                .align(Alignment.Center)
-                .size(128.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.PlayArrow,
-                contentDescription = null,
+        Column {
+            MessagesField(
+                messages = state.messages,
+                modifier = Modifier
+                    .fillMaxHeight(.85f)
+                    .border(1.dp, Color.Red),
+            )
+
+            ChatField(
+                text = state.query,
+                onTextChange = vm::onQueryChange,
+                onRecord = {},
+                onSend = vm::sendMessage,
+                modifier = Modifier.border(1.dp, Color.Yellow),
             )
         }
-
-        ChatField(state)
-
-        //TODO: textfield and button
     }
 }
 
 @Composable
-private fun ChatField(state: ConversationViewState) {
+private fun MessagesField(
+    messages: List<UiMessage>,
+    modifier: Modifier = Modifier,
+) {
+    val listState = rememberLazyListState()
+    LaunchedEffect(messages.size) {
+        listState.animateScrollToItem(index = messages.lastIndex)
+    }
+
     LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
+        contentPadding = WindowInsets.systemBars.asPaddingValues(),
+        modifier = modifier.fillMaxWidth()
     ) {
-        items(state.messages) { message ->
+        items(messages) { message ->
             Box(
                 contentAlignment = if (message.role == Role.USER)
                     Alignment.CenterEnd
@@ -91,4 +116,40 @@ private fun ChatBubble(
             .padding(8.dp)
             .background(MaterialTheme.colorScheme.primaryContainer)
     )
+}
+
+@Composable
+private fun ChatField(
+    text: String,
+    onTextChange: (String) -> Unit,
+    onSend: () -> Unit,
+    onRecord: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .border(1.dp, Color.Blue)
+    ) {
+        TextField(
+            value = text,
+            onValueChange = onTextChange,
+            textStyle = MaterialTheme.typography.bodyMedium,
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { onSend() })
+        )
+
+        Button(
+            onClick = onRecord,
+            enabled = false,
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.PlayArrow,
+                contentDescription = null
+            )
+        }
+    }
 }

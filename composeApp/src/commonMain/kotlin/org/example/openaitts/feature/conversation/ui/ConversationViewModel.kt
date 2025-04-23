@@ -6,6 +6,7 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -20,17 +21,19 @@ class ConversationViewModel(
     private val conversationUseCase: ConversationUseCase,
     private val sendMessageUseCase: SendConversationMessageUseCase,
 ): ViewModel() {
+    private val _typedQuery = MutableStateFlow("")
     private val _state = MutableStateFlow(ConversationViewState())
-    val state = _state
-        //TODO: why does this not work?
-//        .onStart {
-//            connect()
-//        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = ConversationViewState(),
-        )
+    val state = combine(
+        _state,
+        _typedQuery
+    ) { state, typedQuery ->
+        state.copy(query = typedQuery)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = ConversationViewState(),
+    )
+
 
     init {
         viewModelScope.launch {
@@ -38,18 +41,18 @@ class ConversationViewModel(
         }
     }
 
-    fun sendMessage(message: String) {
+    fun sendMessage() {
         _state.update { it.copy(isLoading = true) }
 
         viewModelScope.launch {
-            when (val result = sendMessageUseCase.sendTextMessage(message)) {
+            when (val result = sendMessageUseCase.sendTextMessage(_typedQuery.value)) {
                 is Result.Success -> {
                     val newMessage = UiMessage(
                         type = MessageItem.Type.MESSAGE,
                         role = Role.USER,
                         content = Content(
                             type = Content.Type.INPUT_TEXT,
-                            text = message,
+                            text = _typedQuery.value,
                         )
                     )
                     _state.update { it.copy(messages = it.messages + newMessage) }
@@ -60,7 +63,12 @@ class ConversationViewModel(
                     _state.update { it.copy(error = result.error.toString()) }
                 }
             }
+            _state.update { it.copy(isLoading = false) }
         }
+    }
+
+    fun onQueryChange(query: String) {
+        _typedQuery.update { query }
     }
 
     private suspend fun connect() {
@@ -70,6 +78,7 @@ class ConversationViewModel(
                     _state.update {
                         it.copy(messages = it.messages + result.data.toUi(), isLoading = false)
                     }
+                    Napier.d(tag = TAG) { "items: ${_state.value.messages.size}" }
                 }
                 is Result.Error -> {
                     Napier.e(tag = TAG) { result.error.toString() }

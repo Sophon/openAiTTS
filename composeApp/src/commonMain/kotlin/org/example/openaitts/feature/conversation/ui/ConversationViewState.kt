@@ -10,6 +10,7 @@ data class ConversationViewState(
     val error: String? = null,
     val isLoading: Boolean = false,
 
+    val query: String = "",
     val messages: List<UiMessage> = listOf(),
 )
 
