@@ -3,18 +3,14 @@ package org.example.openaitts.feature.conversation.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.aakira.napier.Napier
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.openaitts.core.domain.onError
-import org.example.openaitts.core.domain.onSuccess
-import org.example.openaitts.feature.chat.domain.Message
 import org.example.openaitts.feature.conversation.domain.ConversationUseCase
 import org.example.openaitts.feature.conversation.domain.SendConversationMessageUseCase
 
@@ -35,7 +31,7 @@ class ConversationViewModel(
 
     fun sendMessage(message: String) {
         viewModelScope.launch {
-            sendMessageUseCase.sendMessage(message)
+            sendMessageUseCase.sendTextMessage(message)
                 .onError { Napier.e(tag = TAG) { it.toString() } }
         }
     }
