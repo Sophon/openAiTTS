@@ -4,35 +4,38 @@ import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.EmptyResult
 import org.example.openaitts.core.domain.Result
 import org.example.openaitts.feature.conversation.data.RealtimeRemoteDataSource
-import org.example.openaitts.feature.conversation.data.dto.ConversationEventDto
+import org.example.openaitts.feature.conversation.domain.models.Content
+import org.example.openaitts.feature.conversation.data.dto.RequestCreateItemDto
+import org.example.openaitts.feature.conversation.data.dto.RequestResponseDto
+import org.example.openaitts.feature.conversation.domain.models.EventType
+import org.example.openaitts.feature.conversation.domain.models.MessageItem
+import org.example.openaitts.feature.conversation.domain.models.Modality
+import org.example.openaitts.feature.conversation.domain.models.Role
 
 class SendConversationMessageUseCase(
     private val remoteDataSource: RealtimeRemoteDataSource,
 ) {
     suspend fun sendTextMessage(message: String): EmptyResult<DataError.Remote> {
-        val eventObject = ConversationEventDto(
-            type = ConversationEventDto.Type.ITEM_CREATE,
-            item = ConversationEventDto.Item(
-                type = ConversationEventDto.Item.Type.MESSAGE,
-                role = ConversationEventDto.Item.Role.USER,
+        val requestCreateItemDto = RequestCreateItemDto(
+            type = EventType.ITEM_CREATE,
+            item = MessageItem(
+                type = MessageItem.Type.MESSAGE,
+                role = Role.USER,
                 content = listOf(
-                    ConversationEventDto.Item.Content(
-                        type = ConversationEventDto.Item.Content.Type.INPUT_TEXT,
-                        text = message,
-                    )
+                    Content(type = Content.Type.INPUT_TEXT, text = message)
                 )
-            ),
+            )
         )
 
-        return when (val response = remoteDataSource.send(eventObject)) {
+        return when (val response = remoteDataSource.send(requestCreateItemDto)) {
             is Result.Success -> {
-                val request = ConversationEventDto(
-                    type = ConversationEventDto.Type.RESPONSE_CREATE,
-                    response = ConversationEventDto.Item(
-                        modalities = listOf(ConversationEventDto.Item.Modality.TEXT)
+                val requestResponseDto = RequestResponseDto(
+                    response = RequestResponseDto.Response(
+                        modalities = listOf(Modality.TEXT)
                     )
                 )
-                remoteDataSource.requestResponse(request)
+
+                remoteDataSource.requestResponse(requestResponseDto)
             }
             is Result.Error -> response
         }

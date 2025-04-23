@@ -3,7 +3,10 @@ package org.example.openaitts.feature.conversation.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Button
@@ -42,14 +45,17 @@ fun ConversationScreen(
             )
         }
 
-        if (state.message != null) {
-            Text(
-                text = state.message!!,
-                color = MaterialTheme.colorScheme.onBackground,
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-            )
+        LazyColumn {
+            items(state.messages) { message ->
+                Text(
+                    text = message.content.text,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
         }
     }
 }

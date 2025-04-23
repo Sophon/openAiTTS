@@ -1,4 +1,4 @@
-package org.example.openaitts.feature.conversation.domain
+package org.example.openaitts.feature.conversation.domain.models
 
 data class Session(
     val id: String,
