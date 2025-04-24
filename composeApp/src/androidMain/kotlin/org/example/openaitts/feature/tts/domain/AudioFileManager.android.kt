@@ -1,15 +1,29 @@
 package org.example.openaitts.feature.tts.domain
 
 import android.content.Context
-import android.media.MediaPlayer
+import android.media.AudioAttributes
+import android.media.AudioFormat
+import android.media.AudioManager
+import android.media.AudioTrack
 import okio.buffer
 import okio.sink
 import java.io.File
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 actual class AudioFileManager(private val context: Context) {
-    private var player: MediaPlayer? = null
     private var file: File? = null
     private var cachedData: ByteArray? = null
+    val audioAttributes = AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_MEDIA)
+        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+        .build()
+
+    val audioFormat = AudioFormat.Builder()
+        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+        .setSampleRate(16_000)
+        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+        .build()
 
     actual fun save(data: ByteArray) {
         file = File(context.filesDir, FILENAME).also { file ->
@@ -17,37 +31,42 @@ actual class AudioFileManager(private val context: Context) {
         }
     }
 
-    actual fun cache(data: ByteArray) {
+    @OptIn(ExperimentalEncodingApi::class)
+    actual fun cache(data: String) {
+        val byteArray = Base64.decode(data)
         cachedData = if (cachedData == null) {
-            data
+            byteArray
         } else {
-            cachedData!! + data
+            cachedData!! + byteArray
         }
     }
 
     actual fun saveCached() {
-        cachedData?.let { save(it) }
-        cachedData = null
+        cachedData?.let { data ->
+            save(data)
+            cachedData = null
+        }
     }
 
     actual fun play() {
-        file?.let {
-            player?.release()
-            player = MediaPlayer().apply {
-                setDataSource(it.absolutePath)
-                prepare()
-                start()
-            }
+        file?.let { file ->
+            val pcmData = file.readBytes()
+
+            val track = AudioTrack(
+                audioAttributes,
+                audioFormat,
+                pcmData.size,
+                AudioTrack.MODE_STATIC,
+                AudioManager.AUDIO_SESSION_ID_GENERATE
+            )
+            track.write(pcmData, 0, pcmData.size)
+            track.play()
         }
     }
 
     actual fun stop() {
-        player?.apply {
-            stop()
-            release()
-        }
-        player = null
+        //TODO: implement
     }
 }
 
-private const val FILENAME = "tts.mp3"
+private const val FILENAME = "tts.pcm"

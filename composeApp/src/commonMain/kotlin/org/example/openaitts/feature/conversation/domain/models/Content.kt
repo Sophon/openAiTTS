@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 data class Content(
     val type: Type,
     val text: String? = null,
+    val transcript: String? = null,
 ) {
     enum class Type {
         @SerialName("input_text") INPUT_TEXT,

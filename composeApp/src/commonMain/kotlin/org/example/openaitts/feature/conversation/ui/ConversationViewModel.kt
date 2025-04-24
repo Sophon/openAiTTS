@@ -11,15 +11,16 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.openaitts.core.domain.Result
-import org.example.openaitts.feature.conversation.domain.ConversationUseCase
-import org.example.openaitts.feature.conversation.domain.SendConversationMessageUseCase
-import org.example.openaitts.feature.conversation.domain.models.Content
 import org.example.openaitts.feature.conversation.domain.models.MessageItem
 import org.example.openaitts.feature.conversation.domain.models.Role
+import org.example.openaitts.feature.conversation.domain.usecases.AudioPlaybackUseCase
+import org.example.openaitts.feature.conversation.domain.usecases.ConversationUseCase
+import org.example.openaitts.feature.conversation.domain.usecases.SendConversationMessageUseCase
 
 class ConversationViewModel(
     private val conversationUseCase: ConversationUseCase,
     private val sendMessageUseCase: SendConversationMessageUseCase,
+    private val audioPlaybackUseCase: AudioPlaybackUseCase,
 ): ViewModel() {
     private val _typedQuery = MutableStateFlow("")
     private val _state = MutableStateFlow(ConversationViewState())
@@ -33,7 +34,6 @@ class ConversationViewModel(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = ConversationViewState(),
     )
-
 
     init {
         viewModelScope.launch {
@@ -52,10 +52,7 @@ class ConversationViewModel(
                     val newMessage = UiMessage(
                         type = MessageItem.Type.MESSAGE,
                         role = Role.USER,
-                        content = Content(
-                            type = Content.Type.INPUT_TEXT,
-                            text = _typedQuery.value,
-                        )
+                        text = _typedQuery.value,
                     )
                     _state.update { it.copy(messages = it.messages + newMessage) }
                     Napier.d(tag = TAG) { "items: ${_state.value.messages.size}" }
@@ -78,10 +75,7 @@ class ConversationViewModel(
         conversationUseCase.establishConnection().collectLatest { result ->
             when (result) {
                 is Result.Success -> {
-                    _state.update {
-                        it.copy(messages = it.messages + result.data.toUi(), isLoading = false)
-                    }
-                    Napier.d(tag = TAG) { "items: ${_state.value.messages.size}" }
+                    handleMessage(result)
                 }
                 is Result.Error -> {
                     Napier.e(tag = TAG) { result.error.toString() }
@@ -89,6 +83,15 @@ class ConversationViewModel(
                 }
             }
         }
+    }
+
+    private fun handleMessage(result: Result.Success<MessageItem>) {
+        _state.update {
+            it.copy(messages = it.messages + result.data.toUi(), isLoading = false)
+        }
+        Napier.d(tag = TAG) { "items: ${_state.value.messages.size}" }
+
+        audioPlaybackUseCase.play()
     }
 }
 

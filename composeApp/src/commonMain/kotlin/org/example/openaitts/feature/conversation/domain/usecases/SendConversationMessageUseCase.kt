@@ -1,16 +1,11 @@
-package org.example.openaitts.feature.conversation.domain
+package org.example.openaitts.feature.conversation.domain.usecases
 
-import io.github.aakira.napier.Napier
-import io.ktor.websocket.Frame
-import io.ktor.websocket.readText
-import kotlinx.serialization.json.Json
 import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.EmptyResult
 import org.example.openaitts.core.domain.Result
 import org.example.openaitts.feature.conversation.data.RealtimeRemoteDataSource
 import org.example.openaitts.feature.conversation.data.dto.RequestCreateItemDto
 import org.example.openaitts.feature.conversation.data.dto.RequestResponseDto
-import org.example.openaitts.feature.conversation.data.dto.ResponseDto
 import org.example.openaitts.feature.conversation.domain.models.Content
 import org.example.openaitts.feature.conversation.domain.models.EventType
 import org.example.openaitts.feature.conversation.domain.models.MessageItem

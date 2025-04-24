@@ -1,4 +1,4 @@
-package org.example.openaitts.feature.conversation.domain
+package org.example.openaitts.feature.conversation.domain.usecases
 
 import io.github.aakira.napier.Napier
 import io.ktor.websocket.Frame
@@ -53,14 +53,13 @@ class ConversationUseCase(
             }
             EventType.RESPONSE_AUDIO_DELTA -> {
                 Napier.d(tag = TAG) { "received audio chunk" }
-                eventObject.delta?.let { audioFileManager.cache(it.encodeToByteArray()) }
+                eventObject.delta?.let { audioFileManager.cache(it) }
                 eventObject
             }
             EventType.RESPONSE_AUDIO_DONE -> {
                 Napier.d(tag = TAG) { "audio chunks done" }
                 audioFileManager.saveCached()
-                audioFileManager.play()
-                null
+                eventObject
             }
 //            EventType.RESPONSE_AUDIO_TRANSCRIPT_DELTA -> {
 //                Napier.d(tag = TAG) { "received audio transcript chunk" }

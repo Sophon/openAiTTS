@@ -112,9 +112,9 @@ private fun ChatBubble(
     message: UiMessage,
     modifier: Modifier = Modifier,
 ) {
-    if (message.content.text != null) {
+    if (message.text != null) {
         Text(
-            text = message.content.text,
+            text = message.text,
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = if (message.role == Role.USER) TextAlign.End else TextAlign.Start,
