@@ -10,6 +10,7 @@ data class ResponseDto(
     val type: EventType,
     @SerialName("event_id") val eventId: String,
     val item: MessageItem? = null,
+    val delta: String? = null,
     val error: Error? = null,
 ) {
 

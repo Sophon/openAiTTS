@@ -20,6 +20,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.rounded.Call
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -60,7 +62,7 @@ fun ConversationScreen(
                     .border(1.dp, Color.Red),
             )
 
-            ChatField(
+            Inputs(
                 text = state.query,
                 onTextChange = vm::onQueryChange,
                 onRecord = {},
@@ -110,19 +112,21 @@ private fun ChatBubble(
     message: UiMessage,
     modifier: Modifier = Modifier,
 ) {
-    Text(
-        text = message.content.text,
-        color = MaterialTheme.colorScheme.onBackground,
-        style = MaterialTheme.typography.bodyMedium,
-        textAlign = if (message.role == Role.USER) TextAlign.End else TextAlign.Start,
-        modifier = modifier
-            .padding(8.dp)
-            .background(MaterialTheme.colorScheme.primaryContainer)
-    )
+    if (message.content.text != null) {
+        Text(
+            text = message.content.text,
+            color = MaterialTheme.colorScheme.onBackground,
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = if (message.role == Role.USER) TextAlign.End else TextAlign.Start,
+            modifier = modifier
+                .padding(8.dp)
+                .background(MaterialTheme.colorScheme.primaryContainer)
+        )
+    }
 }
 
 @Composable
-private fun ChatField(
+private fun Inputs(
     text: String,
     onTextChange: (String) -> Unit,
     onSend: () -> Unit,
@@ -150,7 +154,7 @@ private fun ChatField(
             enabled = false,
         ) {
             Icon(
-                imageVector = Icons.Rounded.PlayArrow,
+                imageVector = Icons.Rounded.Call,
                 contentDescription = null
             )
         }

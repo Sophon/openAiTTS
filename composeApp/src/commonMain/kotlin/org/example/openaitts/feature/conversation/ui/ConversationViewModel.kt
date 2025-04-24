@@ -45,7 +45,9 @@ class ConversationViewModel(
         _state.update { it.copy(isLoading = true) }
 
         viewModelScope.launch {
-            when (val result = sendMessageUseCase.sendTextMessage(_typedQuery.value)) {
+            when (
+                val result = sendMessageUseCase.sendTextMessage(message = _typedQuery.value, useAudio = true)
+            ) {
                 is Result.Success -> {
                     val newMessage = UiMessage(
                         type = MessageItem.Type.MESSAGE,
@@ -64,11 +66,11 @@ class ConversationViewModel(
                 }
             }
             _state.update { it.copy(isLoading = false) }
-            _typedQuery.update { "" }
+            onQueryChange()
         }
     }
 
-    fun onQueryChange(query: String) {
+    fun onQueryChange(query: String = "") {
         _typedQuery.update { query }
     }
 

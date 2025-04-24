@@ -25,6 +25,14 @@ actual class AudioFileManager {
         nsData.writeToFile(path, true)
     }
 
+    actual fun cache(data: ByteArray) {
+        //TODO
+    }
+
+    actual fun saveCached() {
+        //TODO:
+    }
+
     @OptIn(ExperimentalForeignApi::class)
     actual fun play() {
         val url = NSURL.fileURLWithPath(path)

@@ -9,11 +9,25 @@ import java.io.File
 actual class AudioFileManager(private val context: Context) {
     private var player: MediaPlayer? = null
     private var file: File? = null
+    private var cachedData: ByteArray? = null
 
     actual fun save(data: ByteArray) {
         file = File(context.filesDir, FILENAME).also { file ->
             file.sink().buffer().use { it.write(data) }
         }
+    }
+
+    actual fun cache(data: ByteArray) {
+        cachedData = if (cachedData == null) {
+            data
+        } else {
+            cachedData!! + data
+        }
+    }
+
+    actual fun saveCached() {
+        cachedData?.let { save(it) }
+        cachedData = null
     }
 
     actual fun play() {
