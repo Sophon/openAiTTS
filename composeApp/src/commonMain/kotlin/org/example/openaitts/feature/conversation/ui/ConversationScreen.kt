@@ -19,10 +19,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.rounded.Call
-import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,7 +34,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import openaitts.composeapp.generated.resources.Res
+import openaitts.composeapp.generated.resources.ic_mic_on
 import org.example.openaitts.feature.conversation.domain.models.Role
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -154,7 +153,7 @@ private fun Inputs(
             enabled = false,
         ) {
             Icon(
-                imageVector = Icons.Rounded.Call,
+                painter = painterResource(Res.drawable.ic_mic_on),
                 contentDescription = null
             )
         }
