@@ -1,4 +1,4 @@
-package org.example.openaitts.feature.tts.domain
+package org.example.openaitts.feature
 
 import android.content.Context
 import android.media.AudioAttributes
@@ -8,8 +8,6 @@ import android.media.AudioTrack
 import okio.buffer
 import okio.sink
 import java.io.File
-import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 
 actual class AudioFileManager(private val context: Context) {
     private var file: File? = null
@@ -31,13 +29,11 @@ actual class AudioFileManager(private val context: Context) {
         }
     }
 
-    @OptIn(ExperimentalEncodingApi::class)
-    actual fun cache(data: String) {
-        val byteArray = Base64.decode(data)
+    actual fun cache(data: ByteArray) {
         cachedData = if (cachedData == null) {
-            byteArray
+            data
         } else {
-            cachedData!! + byteArray
+            cachedData!! + data
         }
     }
 

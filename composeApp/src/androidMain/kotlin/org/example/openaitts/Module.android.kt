@@ -2,7 +2,7 @@ package org.example.openaitts
 
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.CIO
-import org.example.openaitts.feature.tts.domain.AudioFileManager
+import org.example.openaitts.feature.AudioFileManager
 import org.koin.dsl.module
 
 actual val platformModule = module {

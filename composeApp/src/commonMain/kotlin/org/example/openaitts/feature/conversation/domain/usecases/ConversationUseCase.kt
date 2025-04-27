@@ -10,11 +10,13 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.Json
 import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.Result
+import org.example.openaitts.feature.AudioFileManager
 import org.example.openaitts.feature.conversation.data.RealtimeRemoteDataSource
 import org.example.openaitts.feature.conversation.data.dto.ResponseDto
 import org.example.openaitts.feature.conversation.domain.models.EventType
 import org.example.openaitts.feature.conversation.domain.models.MessageItem
-import org.example.openaitts.feature.tts.domain.AudioFileManager
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 class ConversationUseCase(
     private val remoteDataSource: RealtimeRemoteDataSource,
@@ -53,7 +55,7 @@ class ConversationUseCase(
             }
             EventType.RESPONSE_AUDIO_DELTA -> {
                 Napier.d(tag = TAG) { "received audio chunk" }
-                eventObject.delta?.let { audioFileManager.cache(it) }
+                eventObject.delta?.let { audioFileManager.cache(it.decode()) }
                 eventObject
             }
             EventType.RESPONSE_AUDIO_DONE -> {
@@ -85,6 +87,9 @@ class ConversationUseCase(
 
         return null
     }
+
+    @OptIn(ExperimentalEncodingApi::class)
+    private fun String.decode(): ByteArray = Base64.decode(this)
 }
 
 private const val TAG = "ConversationUseCase"

@@ -1,4 +1,4 @@
-package org.example.openaitts.feature.tts.domain
+package org.example.openaitts.feature
 
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi

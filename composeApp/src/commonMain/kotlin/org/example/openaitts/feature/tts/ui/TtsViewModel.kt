@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.openaitts.core.domain.Result
-import org.example.openaitts.feature.tts.domain.AudioFileManager
+import org.example.openaitts.feature.AudioFileManager
 import org.example.openaitts.feature.tts.domain.PromptTTSUseCase
 
 class TtsViewModel(
