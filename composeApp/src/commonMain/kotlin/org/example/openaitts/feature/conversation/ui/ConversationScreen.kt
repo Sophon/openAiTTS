@@ -65,12 +65,13 @@ fun ConversationScreen(
             )
         },
         modifier = modifier,
-    ) {
+    ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
                 .imePadding()
+                .padding(paddingValues)
         ) {
             Content(
                 vm = vm,
