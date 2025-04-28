@@ -4,8 +4,10 @@ import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.headers
+import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
 import io.ktor.websocket.WebSocketSession
+import io.ktor.websocket.close
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.emitAll
@@ -20,6 +22,7 @@ import org.example.openaitts.core.domain.EmptyResult
 import org.example.openaitts.core.domain.Result
 import org.example.openaitts.feature.conversation.data.dto.RequestCreateItemDto
 import org.example.openaitts.feature.conversation.data.dto.RequestResponseDto
+import org.example.openaitts.feature.conversation.data.dto.RequestUpdateSessionDto
 import org.example.openaitts.feature.conversation.data.dto.ResponseDto
 
 class RealtimeRemoteDataSource(
@@ -27,7 +30,7 @@ class RealtimeRemoteDataSource(
 ) {
     private var webSocketSession: WebSocketSession? = null
 
-    suspend fun initializeSession(
+    suspend fun initializeWebSocketSession(
         processText: (Frame.Text) -> ResponseDto?,
         processBinary: (Frame.Binary) -> ResponseDto?,
     ): Flow<ResponseDto> {
@@ -50,6 +53,23 @@ class RealtimeRemoteDataSource(
 
             emitAll(messages)
         }
+    }
+
+    suspend fun updateSession(requestUpdateDto: RequestUpdateSessionDto): EmptyResult<DataError.Remote> {
+        return try {
+            val json = Json { encodeDefaults = true }
+            val request = json.encodeToString(requestUpdateDto)
+            webSocketSession?.send(Frame.Text(request))
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(DataError.Remote.UNKNOWN)
+        }
+    }
+
+    suspend fun closeWebsocketSession() {
+        webSocketSession?.close(
+            CloseReason(CloseReason.Codes.SERVICE_RESTART, "")
+        )
     }
 
     suspend fun send(message: RequestCreateItemDto): EmptyResult<DataError.Remote> {
@@ -80,4 +100,4 @@ class RealtimeRemoteDataSource(
     }
 }
 
-private const val TAG = "ConversationRemoteDataSource"
+private const val TAG = "RealtimeRemoteDataSource"

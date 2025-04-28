@@ -26,7 +26,9 @@ class ConversationUseCase(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun establishConnection(): Flow<Result<MessageItem, DataError.Remote>> {
-        return remoteDataSource.initializeSession(
+        remoteDataSource.closeWebsocketSession()
+
+        return remoteDataSource.initializeWebSocketSession(
             processText = ::processText,
             processBinary = ::processBinary,
         ).flatMapLatest { dto ->
@@ -71,6 +73,10 @@ class ConversationUseCase(
 //                Napier.d(tag = TAG) { "audio transcript done" }
 //                null
 //            }
+            EventType.SESSION_UPDATED -> {
+                Napier.d(tag = TAG) { "session updated" }
+                null
+            }
             EventType.ERROR -> {
                 Napier.e(tag = TAG) { "error: ${eventObject.error?.message}" }
                 null

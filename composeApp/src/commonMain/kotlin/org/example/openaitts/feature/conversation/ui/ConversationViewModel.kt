@@ -17,11 +17,13 @@ import org.example.openaitts.feature.conversation.domain.models.Voice
 import org.example.openaitts.feature.conversation.domain.usecases.AudioPlaybackUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.ConversationUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.SendConversationMessageUseCase
+import org.example.openaitts.feature.conversation.domain.usecases.UpdateVoiceUseCase
 
 class ConversationViewModel(
     private val conversationUseCase: ConversationUseCase,
     private val sendMessageUseCase: SendConversationMessageUseCase,
     private val audioPlaybackUseCase: AudioPlaybackUseCase,
+    private val updateVoiceUseCase: UpdateVoiceUseCase,
 ): ViewModel() {
     private val _typedQuery = MutableStateFlow("")
     private val _state = MutableStateFlow(ConversationViewState())
@@ -44,6 +46,7 @@ class ConversationViewModel(
 
     fun sendMessage() {
         _state.update { it.copy(isLoading = true) }
+        audioPlaybackUseCase.stop()
 
         viewModelScope.launch {
             when (
@@ -73,6 +76,8 @@ class ConversationViewModel(
     }
 
     fun toggleVoiceSelectorDialogVisibility() {
+        audioPlaybackUseCase.stop()
+
         _state.update { it.copy(isVoiceSelectorDialogVisible = it.isVoiceSelectorDialogVisible.not()) }
         Napier.d(tag = TAG) { "selectVoice dialog" }
     }
@@ -80,11 +85,16 @@ class ConversationViewModel(
     fun selectVoice(selected: Voice) {
         toggleVoiceSelectorDialogVisibility()
         _state.update { it.copy(selectedVoice = selected) }
-        //TODO: session
+
+        viewModelScope.launch {
+            updateVoiceUseCase.updateVoice(selected)
+        }
     }
 
     private suspend fun connect() {
-        conversationUseCase.establishConnection().collectLatest { result ->
+        conversationUseCase
+            .establishConnection()
+            .collectLatest { result ->
             when (result) {
                 is Result.Success -> {
                     handleMessage(result)
