@@ -11,7 +11,9 @@ data class ConversationViewState(
 
     val query: String = "",
     val messages: List<UiMessage> = listOf(),
-)
+) {
+    val isSendEnabled: Boolean get() = query.isNotBlank()
+}
 
 data class UiMessage(
     val type: Type,

@@ -71,6 +71,10 @@ class ConversationViewModel(
         _typedQuery.update { query }
     }
 
+    fun selectVoice() {
+        Napier.d(tag = TAG) { "selectVoice" }
+    }
+
     private suspend fun connect() {
         conversationUseCase.establishConnection().collectLatest { result ->
             when (result) {
