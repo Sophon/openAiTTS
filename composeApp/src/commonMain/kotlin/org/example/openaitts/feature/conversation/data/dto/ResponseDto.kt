@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.example.openaitts.feature.conversation.domain.models.EventType
 import org.example.openaitts.feature.conversation.domain.models.MessageItem
+import org.example.openaitts.feature.conversation.domain.models.Session
 
 @Serializable
 data class ResponseDto(
@@ -12,6 +13,7 @@ data class ResponseDto(
     val item: MessageItem? = null,
     val delta: String? = null,
     val error: Error? = null,
+    val session: Session? = null,
 ) {
 
     @Serializable

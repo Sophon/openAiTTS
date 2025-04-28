@@ -57,7 +57,7 @@ class RealtimeRemoteDataSource(
 
     suspend fun updateSession(requestUpdateDto: RequestUpdateSessionDto): EmptyResult<DataError.Remote> {
         return try {
-            val json = Json { encodeDefaults = true }
+            val json = Json { encodeDefaults = false }
             val request = json.encodeToString(requestUpdateDto)
             webSocketSession?.send(Frame.Text(request))
             Result.Success(Unit)

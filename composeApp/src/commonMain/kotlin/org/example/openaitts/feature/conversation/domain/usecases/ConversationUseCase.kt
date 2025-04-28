@@ -50,9 +50,7 @@ class ConversationUseCase(
 
         return when (eventObject.type) {
             EventType.RESPONSE_OUTPUT_ITEM_DONE -> {
-                Napier.d(tag = TAG) {
-                    "response output item done: ${eventObject.item?.content?.firstOrNull()?.text}"
-                }
+                Napier.d(tag = TAG) { "response output item done: ${eventObject.item?.content?.firstOrNull()?.text}" }
                 eventObject
             }
             EventType.RESPONSE_AUDIO_DELTA -> {
@@ -74,15 +72,15 @@ class ConversationUseCase(
 //                null
 //            }
             EventType.SESSION_UPDATED -> {
-                Napier.d(tag = TAG) { "session updated" }
+                Napier.d(tag = TAG) { "session updated: $eventObject" }
                 null
             }
             EventType.ERROR -> {
-                Napier.e(tag = TAG) { "error: ${eventObject.error?.message}" }
+                Napier.e(tag = TAG) { "error: $eventObject" }
                 null
             }
             else -> {
-                Napier.d(tag = TAG) { "some other event: ${eventObject.type}" }
+                Napier.d(tag = TAG) { "unhandled event: $eventObject" }
                 null
             }
         }

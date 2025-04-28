@@ -6,6 +6,6 @@ import org.example.openaitts.feature.conversation.domain.models.Session
 
 @Serializable
 data class RequestUpdateSessionDto(
-    val type: EventType = EventType.SESSION_UPDATE,
+    val type: EventType,
     val session: Session,
 )
