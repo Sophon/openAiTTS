@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import org.example.openaitts.core.domain.Result
 import org.example.openaitts.feature.conversation.domain.models.MessageItem
 import org.example.openaitts.feature.conversation.domain.models.Role
+import org.example.openaitts.feature.conversation.domain.models.Voice
 import org.example.openaitts.feature.conversation.domain.usecases.AudioPlaybackUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.ConversationUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.SendConversationMessageUseCase
@@ -71,8 +72,15 @@ class ConversationViewModel(
         _typedQuery.update { query }
     }
 
-    fun selectVoice() {
-        Napier.d(tag = TAG) { "selectVoice" }
+    fun toggleVoiceSelectorDialogVisibility() {
+        _state.update { it.copy(isVoiceSelectorDialogVisible = it.isVoiceSelectorDialogVisible.not()) }
+        Napier.d(tag = TAG) { "selectVoice dialog" }
+    }
+
+    fun selectVoice(selected: Voice) {
+        toggleVoiceSelectorDialogVisibility()
+        _state.update { it.copy(selectedVoice = selected) }
+        //TODO: session
     }
 
     private suspend fun connect() {

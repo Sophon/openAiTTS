@@ -13,17 +13,6 @@ data class Session(
     val clientSecret: ClientSecret,
 ) {
 
-    enum class Voice {
-        ALLOY,
-        ASH,
-        BALLAD,
-        CORAL,
-        ECHO,
-        SAGE,
-        SHIMMER,
-        VERSE,
-    }
-
     enum class AudioFormat {
         PCM16,
         G711_ULAW,

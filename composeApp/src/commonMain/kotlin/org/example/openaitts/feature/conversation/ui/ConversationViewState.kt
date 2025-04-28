@@ -4,6 +4,7 @@ import org.example.openaitts.feature.conversation.domain.models.Content
 import org.example.openaitts.feature.conversation.domain.models.MessageItem
 import org.example.openaitts.feature.conversation.domain.models.MessageItem.Type
 import org.example.openaitts.feature.conversation.domain.models.Role
+import org.example.openaitts.feature.conversation.domain.models.Voice
 
 data class ConversationViewState(
     val error: String? = null,
@@ -11,8 +12,11 @@ data class ConversationViewState(
 
     val query: String = "",
     val messages: List<UiMessage> = listOf(),
+    val selectedVoice: Voice = Voice.ALLOY,
+    val isVoiceSelectorDialogVisible: Boolean = false,
 ) {
     val isSendEnabled: Boolean get() = query.isNotBlank()
+    val selectedVoiceInitials: String get() = selectedVoice.name.take(3)
 }
 
 data class UiMessage(

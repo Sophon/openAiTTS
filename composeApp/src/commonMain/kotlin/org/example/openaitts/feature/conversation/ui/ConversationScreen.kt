@@ -18,11 +18,11 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -46,6 +46,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import openaitts.composeapp.generated.resources.Res
 import openaitts.composeapp.generated.resources.ic_mic_on
 import org.example.openaitts.feature.conversation.domain.models.Role
+import org.example.openaitts.feature.conversation.ui.components.VoiceSelectorDialog
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -57,7 +58,12 @@ fun ConversationScreen(
     val state by vm.state.collectAsStateWithLifecycle()
 
     Scaffold(
-        topBar = { TopBar(onClick = vm::selectVoice) },
+        topBar = {
+            TopBar(
+                onClick = vm::toggleVoiceSelectorDialogVisibility,
+                selectedVoiceInitials = state.selectedVoiceInitials,
+            )
+        },
         modifier = modifier,
     ) {
         Box(
@@ -70,6 +76,13 @@ fun ConversationScreen(
                 vm = vm,
                 state = state,
             )
+
+            if (state.isVoiceSelectorDialogVisible) {
+                VoiceSelectorDialog(
+                    selectedVoice = state.selectedVoice,
+                    onVoiceSelect = vm::selectVoice,
+                )
+            }
         }
     }
 }
@@ -78,6 +91,7 @@ fun ConversationScreen(
 @Composable
 private fun TopBar(
     onClick: () -> Unit,
+    selectedVoiceInitials: String,
     modifier: Modifier = Modifier,
 ) {
     TopAppBar(
@@ -89,11 +103,19 @@ private fun TopBar(
         },
         actions = {
             IconButton(onClick = onClick) {
-                Icon(
-                    Icons.Rounded.AccountCircle,
-                    contentDescription = null,
-                    modifier = Modifier.size(32.dp)
-                )
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(MaterialTheme.colorScheme.onPrimary, shape = CircleShape)
+                ) {
+                    Text(
+                        text = selectedVoiceInitials,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
         },
         colors = TopAppBarDefaults.topAppBarColors().copy(
