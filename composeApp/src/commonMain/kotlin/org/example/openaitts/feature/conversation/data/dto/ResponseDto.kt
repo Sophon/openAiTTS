@@ -19,7 +19,6 @@ data class ResponseDto(
     @Serializable
     data class Error(
         val type: String,
-        val code: String,
         val message: String,
     )
 }

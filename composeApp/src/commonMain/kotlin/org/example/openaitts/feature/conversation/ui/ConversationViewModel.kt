@@ -87,6 +87,7 @@ class ConversationViewModel(
         _state.update { it.copy(selectedVoice = selected) }
 
         viewModelScope.launch {
+            audioPlaybackUseCase.stop()
             updateVoiceUseCase.updateVoice(selected)
         }
     }
