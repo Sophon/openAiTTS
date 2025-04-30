@@ -8,6 +8,7 @@ data class Content(
     val type: Type,
     val text: String? = null,
     val transcript: String? = null,
+    val audio: String? = null,
 ) {
     enum class Type {
         @SerialName("input_text") INPUT_TEXT,

@@ -15,6 +15,7 @@ import org.example.openaitts.feature.conversation.data.RealtimeRemoteDataSource
 import org.example.openaitts.feature.conversation.data.dto.ResponseDto
 import org.example.openaitts.feature.conversation.domain.models.EventType
 import org.example.openaitts.feature.conversation.domain.models.MessageItem
+import org.example.openaitts.feature.conversation.domain.utils.decode
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -91,9 +92,6 @@ class ConversationUseCase(
 
         return null
     }
-
-    @OptIn(ExperimentalEncodingApi::class)
-    private fun String.decode(): ByteArray = Base64.decode(this)
 }
 
 private const val TAG = "ConversationUseCase"

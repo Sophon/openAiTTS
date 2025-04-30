@@ -47,6 +47,14 @@ actual class AudioFileManager {
         player?.stop()
         player = null
     }
+
+    actual fun retrieveFile(path: String): ByteArray? {
+        TODO()
+    }
+
+    actual fun testPlay() {
+        //TODO
+    }
 }
 
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)

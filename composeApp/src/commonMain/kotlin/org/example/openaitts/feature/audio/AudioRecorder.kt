@@ -14,7 +14,7 @@ class AudioRecorder {
         Record.setConfig(
             RecordConfig(
                 outputLocation = OutputLocation.Cache,
-                outputFormat = OutputFormat.MPEG_4,
+                outputFormat = OutputFormat.WAV,
                 audioEncoder = AudioEncoder.AAC,
             )
         )

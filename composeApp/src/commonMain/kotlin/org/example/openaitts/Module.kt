@@ -11,7 +11,6 @@ import org.example.openaitts.feature.conversation.data.RealtimeRemoteDataSource
 import org.example.openaitts.feature.conversation.domain.usecases.AudioPlaybackUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.ConversationUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.RecordAudioUseCase
-import org.example.openaitts.feature.conversation.domain.usecases.SendAudioUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.SendConversationMessageUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.StopAudioRecordingUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.UpdateVoiceUseCase
@@ -61,7 +60,7 @@ val sharedModule = module {
 
     //region Conversation
     viewModel {
-        ConversationViewModel(get(), get(), get(), get(), get(), get(), get())
+        ConversationViewModel(get(), get(), get(), get(), get(), get())
     }
     singleOf(::RealtimeRemoteDataSource)
     singleOf(::ConversationUseCase)
@@ -69,7 +68,6 @@ val sharedModule = module {
     singleOf(::UpdateVoiceUseCase)
     singleOf(::RecordAudioUseCase)
     singleOf(::StopAudioRecordingUseCase)
-    singleOf(::SendAudioUseCase)
     //endregion
 
     //region Audio

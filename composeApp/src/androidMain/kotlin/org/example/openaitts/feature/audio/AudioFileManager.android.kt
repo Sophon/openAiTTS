@@ -5,6 +5,7 @@ import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
+import io.github.aakira.napier.Napier
 import okio.buffer
 import okio.sink
 import java.io.File
@@ -22,6 +23,7 @@ actual class AudioFileManager(private val context: Context) {
         .setSampleRate(16_000)
         .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
         .build()
+    var audioTrack: AudioTrack? = null
 
     actual fun save(data: ByteArray) {
         file = File(context.filesDir, FILENAME).also { file ->
@@ -48,21 +50,48 @@ actual class AudioFileManager(private val context: Context) {
         file?.let { file ->
             val pcmData = file.readBytes()
 
-            val track = AudioTrack(
+            audioTrack = AudioTrack(
                 audioAttributes,
                 audioFormat,
                 pcmData.size,
                 AudioTrack.MODE_STATIC,
                 AudioManager.AUDIO_SESSION_ID_GENERATE
             )
-            track.write(pcmData, 0, pcmData.size)
-            track.play()
+            audioTrack!!.write(pcmData, 0, pcmData.size)
+            audioTrack!!.play()
         }
     }
 
     actual fun stop() {
-        //TODO: implement
+        audioTrack?.stop()
+    }
+
+    actual fun retrieveFile(path: String): ByteArray? {
+        try {
+            return File(context.cacheDir, "snow.wav").readBytes()
+        } catch (e: Exception) {
+            Napier.e(tag = TAG) { "Error: ${e.message}" }
+            return null
+        }
+    }
+
+    actual fun testPlay() {
+        File(context.cacheDir, "test.wav").let { file ->
+            val pcmData = file.readBytes()
+
+            AudioTrack(
+                audioAttributes,
+                audioFormat,
+                pcmData.size,
+                AudioTrack.MODE_STATIC,
+                AudioManager.AUDIO_SESSION_ID_GENERATE
+            ).apply {
+                write(pcmData, 0, pcmData.size)
+                play()
+            }
+        }
     }
 }
 
 private const val FILENAME = "tts.pcm"
+private const val TAG = "AudioFileManager"

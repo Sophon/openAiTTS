@@ -17,7 +17,6 @@ import org.example.openaitts.feature.conversation.domain.models.Voice
 import org.example.openaitts.feature.conversation.domain.usecases.AudioPlaybackUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.ConversationUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.RecordAudioUseCase
-import org.example.openaitts.feature.conversation.domain.usecases.SendAudioUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.SendConversationMessageUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.StopAudioRecordingUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.UpdateVoiceUseCase
@@ -29,7 +28,6 @@ class ConversationViewModel(
     private val updateVoiceUseCase: UpdateVoiceUseCase,
     private val recordAudioUseCase: RecordAudioUseCase,
     private val stopAudioRecordingUseCase: StopAudioRecordingUseCase,
-    private val sendAudioUseCase: SendAudioUseCase,
 ): ViewModel() {
     private val _typedQuery = MutableStateFlow("")
     private val _state = MutableStateFlow(ConversationViewState())
@@ -107,7 +105,18 @@ class ConversationViewModel(
 //        _state.update { it.copy(recordingStatus = ConversationViewState.RecordingStatus.DISABLED) }
         _state.update { it.copy(recordingStatus = ConversationViewState.RecordingStatus.IDLE) }
         stopAudioRecordingUseCase.execute()
-        sendAudioUseCase.execute()
+
+        viewModelScope.launch {
+            when (val result = sendMessageUseCase.sendVoiceMessage()) {
+                is Result.Success -> {
+                    Napier.d(tag = TAG) { "audio success" }
+                }
+                is Result.Error -> {
+                    Napier.e(tag = TAG) { result.error.toString() }
+                    _state.update { it.copy(error = result.error.toString()) }
+                }
+            }
+        }
     }
 
     private suspend fun connect() {
