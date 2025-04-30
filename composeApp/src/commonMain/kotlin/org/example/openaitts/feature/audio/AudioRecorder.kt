@@ -6,10 +6,9 @@ import dev.theolm.record.config.OutputFormat
 import dev.theolm.record.config.OutputLocation
 import dev.theolm.record.config.RecordConfig
 import io.github.aakira.napier.Napier
-import org.example.openaitts.feature.TAG
 
 class AudioRecorder {
-    private val record = Record
+    var location: String? = null
 
     init {
         Record.setConfig(
@@ -21,13 +20,19 @@ class AudioRecorder {
         )
     }
 
-    fun record() = Record.startRecording()
+    fun record() {
+        Napier.d(tag = TAG) { "Recording..." }
+        Record.startRecording()
+    }
 
     fun stopRecording() {
         Record.stopRecording().also { savedAudioPath: String ->
+            location = savedAudioPath
             Napier.d(tag = TAG) { "Recording saved to: $savedAudioPath" }
         }
     }
 
     fun isRecording() = Record.isRecording()
 }
+
+private const val TAG = "AudioRecorder"

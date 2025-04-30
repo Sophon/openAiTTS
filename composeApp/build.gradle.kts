@@ -71,6 +71,10 @@ kotlin {
             implementation(libs.napier)
 
             implementation(libs.record)
+
+            implementation(libs.moko.permissions)
+            implementation(libs.moko.permissions.compose)
+            implementation(libs.moko.permissions.microphone)
         }
 
         iosMain.dependencies {

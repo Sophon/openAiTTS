@@ -1,6 +1,6 @@
 [versions]
 agp = "8.5.2"
-android-compileSdk = "34"
+android-compileSdk = "35"
 android-minSdk = "24"
 android-targetSdk = "34"
 kotlin = "2.0.21"
@@ -23,7 +23,8 @@ turbine = "0.7.0"
 core-ktx = "1.7.0"
 buildkonfig = "0.17.0"
 napier = "2.6.1"
-record = "0.3.0"
+record = "0.4.0"
+moko = "0.19.1"
 
 
 [libraries]
@@ -75,6 +76,11 @@ napier = { module = "io.github.aakira:napier", version.ref = "napier" }
 
 # Audio recording
 record = { module = "dev.theolm.record:record-core", version.ref = "record" }
+
+# Permissions
+moko-permissions = { module = "dev.icerock.moko:permissions", version.ref = "moko" }
+moko-permissions-compose = { module = "dev.icerock.moko:permissions-compose", version.ref = "moko"}
+moko-permissions-microphone = { module = "dev.icerock.moko:permissions-microphone", version.ref = "moko"}
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

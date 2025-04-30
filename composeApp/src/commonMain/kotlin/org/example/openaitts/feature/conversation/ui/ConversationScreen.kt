@@ -47,6 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import openaitts.composeapp.generated.resources.Res
 import openaitts.composeapp.generated.resources.ic_mic_on
 import org.example.openaitts.feature.conversation.domain.models.Role
+import org.example.openaitts.feature.conversation.ui.components.RecordButton
 import org.example.openaitts.feature.conversation.ui.components.VoiceSelectorDialog
 import org.example.openaitts.theme.localAppColorPalette
 import org.jetbrains.compose.resources.painterResource
@@ -250,22 +251,10 @@ private fun Inputs(
                 .weight(1f)
         )
 
-        val color: Color
-        val action: () -> Unit
-        if (recordingStatus == ConversationViewState.RecordingStatus.RECORDING) {
-            color = localAppColorPalette.current.lossRed
-            action = onStopRecording
-        } else {
-            color = localAppColorPalette.current.profitGreen
-            action = onStartRecording
-        }
-        Button(
-            onClick = action,
-            enabled = (recordingStatus != ConversationViewState.RecordingStatus.DISABLED),
-            colors = ButtonDefaults.buttonColors().copy(containerColor = color),
-            modifier = Modifier.padding(horizontal = 4.dp)
-        ) {
-            Icon(painterResource(Res.drawable.ic_mic_on), contentDescription = null)
-        }
+        RecordButton(
+            recordingStatus = recordingStatus,
+            onStartRecording = onStartRecording,
+            onStopRecording = onStopRecording,
+        )
     }
 }
