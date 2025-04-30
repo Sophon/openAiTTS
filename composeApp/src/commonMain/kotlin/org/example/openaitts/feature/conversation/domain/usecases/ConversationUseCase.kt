@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.Json
 import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.Result
-import org.example.openaitts.feature.AudioFileManager
+import org.example.openaitts.feature.audio.AudioFileManager
 import org.example.openaitts.feature.conversation.data.RealtimeRemoteDataSource
 import org.example.openaitts.feature.conversation.data.dto.ResponseDto
 import org.example.openaitts.feature.conversation.domain.models.EventType

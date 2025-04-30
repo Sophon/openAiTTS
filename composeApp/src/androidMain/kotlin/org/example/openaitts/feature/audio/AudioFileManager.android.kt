@@ -1,4 +1,4 @@
-package org.example.openaitts.feature
+package org.example.openaitts.feature.audio
 
 import android.content.Context
 import android.media.AudioAttributes

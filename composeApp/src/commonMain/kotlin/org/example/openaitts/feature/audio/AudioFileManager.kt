@@ -1,4 +1,4 @@
-package org.example.openaitts.feature
+package org.example.openaitts.feature.audio
 
 expect class AudioFileManager {
     fun save(data: ByteArray)

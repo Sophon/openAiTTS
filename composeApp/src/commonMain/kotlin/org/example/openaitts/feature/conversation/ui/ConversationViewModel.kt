@@ -16,7 +16,10 @@ import org.example.openaitts.feature.conversation.domain.models.Role
 import org.example.openaitts.feature.conversation.domain.models.Voice
 import org.example.openaitts.feature.conversation.domain.usecases.AudioPlaybackUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.ConversationUseCase
+import org.example.openaitts.feature.conversation.domain.usecases.RecordAudioUseCase
+import org.example.openaitts.feature.conversation.domain.usecases.SendAudioUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.SendConversationMessageUseCase
+import org.example.openaitts.feature.conversation.domain.usecases.StopAudioRecordingUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.UpdateVoiceUseCase
 
 class ConversationViewModel(
@@ -24,6 +27,9 @@ class ConversationViewModel(
     private val sendMessageUseCase: SendConversationMessageUseCase,
     private val audioPlaybackUseCase: AudioPlaybackUseCase,
     private val updateVoiceUseCase: UpdateVoiceUseCase,
+    private val recordAudioUseCase: RecordAudioUseCase,
+    private val stopAudioRecordingUseCase: StopAudioRecordingUseCase,
+    private val sendAudioUseCase: SendAudioUseCase,
 ): ViewModel() {
     private val _typedQuery = MutableStateFlow("")
     private val _state = MutableStateFlow(ConversationViewState())
@@ -90,6 +96,18 @@ class ConversationViewModel(
             audioPlaybackUseCase.stop()
             updateVoiceUseCase.updateVoice(selected)
         }
+    }
+
+    fun startRecording() {
+        _state.update { it.copy(recordingStatus = ConversationViewState.RecordingStatus.RECORDING) }
+        recordAudioUseCase.execute()
+    }
+
+    fun stopRecording() {
+//        _state.update { it.copy(recordingStatus = ConversationViewState.RecordingStatus.DISABLED) }
+        _state.update { it.copy(recordingStatus = ConversationViewState.RecordingStatus.IDLE) }
+        stopAudioRecordingUseCase.execute()
+        sendAudioUseCase.execute()
     }
 
     private suspend fun connect() {

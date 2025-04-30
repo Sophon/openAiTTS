@@ -24,6 +24,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,6 +48,7 @@ import openaitts.composeapp.generated.resources.Res
 import openaitts.composeapp.generated.resources.ic_mic_on
 import org.example.openaitts.feature.conversation.domain.models.Role
 import org.example.openaitts.feature.conversation.ui.components.VoiceSelectorDialog
+import org.example.openaitts.theme.localAppColorPalette
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -149,7 +151,9 @@ private fun Content(
             onTextChange = vm::onQueryChange,
             isSendEnabled = state.isSendEnabled,
             onSend = vm::sendMessage,
-            onRecord = {},
+            recordingStatus = state.recordingStatus,
+            onStartRecording = vm::startRecording,
+            onStopRecording = vm::stopRecording,
             modifier = Modifier.border(1.dp, Color.Yellow),
         )
     }
@@ -213,7 +217,9 @@ private fun Inputs(
     onTextChange: (String) -> Unit,
     isSendEnabled: Boolean,
     onSend: () -> Unit,
-    onRecord: () -> Unit,
+    recordingStatus: ConversationViewState.RecordingStatus,
+    onStartRecording: () -> Unit,
+    onStopRecording: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -244,9 +250,19 @@ private fun Inputs(
                 .weight(1f)
         )
 
+        val color: Color
+        val action: () -> Unit
+        if (recordingStatus == ConversationViewState.RecordingStatus.RECORDING) {
+            color = localAppColorPalette.current.lossRed
+            action = onStopRecording
+        } else {
+            color = localAppColorPalette.current.profitGreen
+            action = onStartRecording
+        }
         Button(
-            onClick = onRecord,
-            enabled = false,
+            onClick = action,
+            enabled = (recordingStatus != ConversationViewState.RecordingStatus.DISABLED),
+            colors = ButtonDefaults.buttonColors().copy(containerColor = color),
             modifier = Modifier.padding(horizontal = 4.dp)
         ) {
             Icon(painterResource(Res.drawable.ic_mic_on), contentDescription = null)

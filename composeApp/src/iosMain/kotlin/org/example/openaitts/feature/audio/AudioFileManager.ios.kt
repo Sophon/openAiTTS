@@ -1,4 +1,4 @@
-package org.example.openaitts.feature
+package org.example.openaitts.feature.audio
 
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi

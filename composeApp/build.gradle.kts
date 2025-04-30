@@ -69,6 +69,8 @@ kotlin {
             implementation(libs.coil.network.ktor)
 
             implementation(libs.napier)
+
+            implementation(libs.record)
         }
 
         iosMain.dependencies {

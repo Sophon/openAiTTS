@@ -1,6 +1,6 @@
 package org.example.openaitts.feature.conversation.domain.usecases
 
-import org.example.openaitts.feature.AudioFileManager
+import org.example.openaitts.feature.audio.AudioFileManager
 
 class AudioPlaybackUseCase(
     private val audioFileManager: AudioFileManager,

@@ -2,6 +2,7 @@ package org.example.openaitts
 
 import io.ktor.client.HttpClient
 import org.example.openaitts.core.network.HttpClientFactory
+import org.example.openaitts.feature.audio.AudioRecorder
 import org.example.openaitts.feature.chat.ChatViewModel
 import org.example.openaitts.feature.chat.data.remote.ChatRemoteDataSource
 import org.example.openaitts.feature.chat.data.remote.ChatRemoteDataSourceImpl
@@ -9,7 +10,10 @@ import org.example.openaitts.feature.chat.domain.SendMessageUseCase
 import org.example.openaitts.feature.conversation.data.RealtimeRemoteDataSource
 import org.example.openaitts.feature.conversation.domain.usecases.AudioPlaybackUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.ConversationUseCase
+import org.example.openaitts.feature.conversation.domain.usecases.RecordAudioUseCase
+import org.example.openaitts.feature.conversation.domain.usecases.SendAudioUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.SendConversationMessageUseCase
+import org.example.openaitts.feature.conversation.domain.usecases.StopAudioRecordingUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.UpdateVoiceUseCase
 import org.example.openaitts.feature.conversation.ui.ConversationViewModel
 import org.example.openaitts.feature.tts.data.TtsRemoteDataSource
@@ -56,11 +60,20 @@ val sharedModule = module {
     //endregion
 
     //region Conversation
-    viewModel { ConversationViewModel(get(), get(), get(), get()) }
+    viewModel {
+        ConversationViewModel(get(), get(), get(), get(), get(), get(), get())
+    }
     singleOf(::RealtimeRemoteDataSource)
     singleOf(::ConversationUseCase)
     singleOf(::SendConversationMessageUseCase)
     singleOf(::UpdateVoiceUseCase)
+    singleOf(::RecordAudioUseCase)
+    singleOf(::StopAudioRecordingUseCase)
+    singleOf(::SendAudioUseCase)
+    //endregion
+
+    //region Audio
     singleOf(::AudioPlaybackUseCase)
+    singleOf(::AudioRecorder)
     //endregion
 }
