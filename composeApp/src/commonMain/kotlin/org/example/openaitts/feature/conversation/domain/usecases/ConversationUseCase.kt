@@ -36,18 +36,6 @@ class ConversationUseCase(
             processBinary = ::processBinary,
         )
 
-        remoteDataSource.updateSession(
-            RequestUpdateSessionDto(
-                type = EventType.SESSION_UPDATE,
-                session = Session(
-                    inputAudioTranscription = Session.InputAudioTranscription(
-                        language = "en",
-                        model = "gpt-4o-transcribe"
-                    )
-                )
-            )
-        )
-
         return flowResponse.flatMapLatest { dto ->
             flow {
                 emit(

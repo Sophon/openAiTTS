@@ -20,7 +20,7 @@ actual class AudioFileManager(private val context: Context) {
 
     val audioFormat = AudioFormat.Builder()
         .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-        .setSampleRate(44_100)
+        .setSampleRate(24_000)
         .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
         .build()
     var audioTrack: AudioTrack? = null
