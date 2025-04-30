@@ -11,6 +11,7 @@ data class Session(
     val instructions: String? = null,
     val voice: Voice? = null,
     val inputAudioFormat: AudioFormat? = null,
+    @SerialName("input_audio_transcription") val inputAudioTranscription: InputAudioTranscription? = null,
     val outputAudioFormat: AudioFormat? = null,
     val turnDetection: TurnDetection? = null,
     val temperature: Double? = null,
@@ -32,8 +33,11 @@ data class Session(
         val type: String,
     )
 
+    @Serializable
     data class InputAudioTranscription(
-        val model: String
+        val language: String,
+        val model: String,
+        val prompt: String? = null,
     )
 
     @Serializable

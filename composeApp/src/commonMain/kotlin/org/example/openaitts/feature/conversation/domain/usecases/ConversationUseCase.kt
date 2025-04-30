@@ -12,9 +12,11 @@ import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.Result
 import org.example.openaitts.feature.audio.AudioFileManager
 import org.example.openaitts.feature.conversation.data.RealtimeRemoteDataSource
+import org.example.openaitts.feature.conversation.data.dto.RequestUpdateSessionDto
 import org.example.openaitts.feature.conversation.data.dto.ResponseDto
 import org.example.openaitts.feature.conversation.domain.models.EventType
 import org.example.openaitts.feature.conversation.domain.models.MessageItem
+import org.example.openaitts.feature.conversation.domain.models.Session
 import org.example.openaitts.feature.conversation.domain.utils.decode
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
@@ -29,10 +31,24 @@ class ConversationUseCase(
     suspend fun establishConnection(): Flow<Result<MessageItem, DataError.Remote>> {
         remoteDataSource.closeWebsocketSession()
 
-        return remoteDataSource.initializeWebSocketSession(
+        val flowResponse = remoteDataSource.initializeWebSocketSession(
             processText = ::processText,
             processBinary = ::processBinary,
-        ).flatMapLatest { dto ->
+        )
+
+        remoteDataSource.updateSession(
+            RequestUpdateSessionDto(
+                type = EventType.SESSION_UPDATE,
+                session = Session(
+                    inputAudioTranscription = Session.InputAudioTranscription(
+                        language = "en",
+                        model = "gpt-4o-transcribe"
+                    )
+                )
+            )
+        )
+
+        return flowResponse.flatMapLatest { dto ->
             flow {
                 emit(
                     if (dto.item == null) {
