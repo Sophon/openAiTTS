@@ -15,7 +15,8 @@ class AudioRecorder {
             RecordConfig(
                 outputLocation = OutputLocation.Cache,
                 outputFormat = OutputFormat.WAV,
-                audioEncoder = AudioEncoder.AAC,
+                audioEncoder = AudioEncoder.PCM_16BIT,
+                sampleRate = 24_000,
             )
         )
     }

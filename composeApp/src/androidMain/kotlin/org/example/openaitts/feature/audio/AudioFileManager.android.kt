@@ -68,9 +68,10 @@ actual class AudioFileManager(private val context: Context) {
 
     actual fun retrieveFile(path: String): ByteArray? {
         try {
+//            return File(context.cacheDir, "snow.wav").readBytes()
             return File(context.cacheDir, path).readBytes()
         } catch (e: Exception) {
-            Napier.e(tag = TAG) { "File retrieval error: ${e.message}" }
+            Napier.e(tag = TAG) { "Error: ${e.message}" }
             return null
         }
     }

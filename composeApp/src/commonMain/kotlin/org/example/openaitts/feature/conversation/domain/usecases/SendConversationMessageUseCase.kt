@@ -1,5 +1,7 @@
 package org.example.openaitts.feature.conversation.domain.usecases
 
+import io.github.aakira.napier.Napier
+import kotlinx.datetime.Clock
 import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.EmptyResult
 import org.example.openaitts.core.domain.Result
@@ -20,6 +22,8 @@ class SendConversationMessageUseCase(
     private val audioFileManager: AudioFileManager,
     private val audioRecorder: AudioRecorder,
 ) {
+    private var eventId: String? = null
+
     suspend fun sendTextMessage(
         message: String,
         useAudio: Boolean = false
@@ -56,7 +60,18 @@ class SendConversationMessageUseCase(
                 )
 
                 return when (val response = remoteDataSource.send(requestDto)) {
-                    is Result.Success -> requestResponse(true)
+                    is Result.Success -> {
+//                        when (val result = transcriptionRemoteDataSource.sendAudio(
+//                            TranscriptionRequestDto(file = data)
+//                        )) {
+//                            is Result.Success -> {
+//                                Napier.d(tag = TAG) { "received transcription ${result.data}" }
+//                            }
+//                            is Result.Error -> Napier.e { result.error.toString() }
+//                        }
+
+                        requestResponse(true)
+                    }
                     is Result.Error -> response
                 }
             }
