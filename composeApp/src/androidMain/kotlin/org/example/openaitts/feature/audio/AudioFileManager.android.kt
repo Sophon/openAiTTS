@@ -14,13 +14,13 @@ actual class AudioFileManager(private val context: Context) {
     private var file: File? = null
     private var cachedData: ByteArray? = null
     val audioAttributes = AudioAttributes.Builder()
-        .setUsage(AudioAttributes.USAGE_MEDIA)
+        .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
         .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
         .build()
 
     val audioFormat = AudioFormat.Builder()
         .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-        .setSampleRate(16_000)
+        .setSampleRate(44_100)
         .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
         .build()
     var audioTrack: AudioTrack? = null
@@ -68,9 +68,9 @@ actual class AudioFileManager(private val context: Context) {
 
     actual fun retrieveFile(path: String): ByteArray? {
         try {
-            return File(context.cacheDir, "snow.wav").readBytes()
+            return File(context.cacheDir, path).readBytes()
         } catch (e: Exception) {
-            Napier.e(tag = TAG) { "Error: ${e.message}" }
+            Napier.e(tag = TAG) { "File retrieval error: ${e.message}" }
             return null
         }
     }

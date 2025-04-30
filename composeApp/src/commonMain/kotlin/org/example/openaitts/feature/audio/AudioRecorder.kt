@@ -27,7 +27,7 @@ class AudioRecorder {
 
     fun stopRecording() {
         Record.stopRecording().also { savedAudioPath: String ->
-            location = savedAudioPath
+            location = savedAudioPath.split("/").last()
             Napier.d(tag = TAG) { "Recording saved to: $savedAudioPath" }
         }
     }
