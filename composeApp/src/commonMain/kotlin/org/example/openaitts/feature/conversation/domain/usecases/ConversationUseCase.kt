@@ -12,14 +12,10 @@ import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.Result
 import org.example.openaitts.feature.audio.AudioFileManager
 import org.example.openaitts.feature.conversation.data.RealtimeRemoteDataSource
-import org.example.openaitts.feature.conversation.data.dto.RequestUpdateSessionDto
 import org.example.openaitts.feature.conversation.data.dto.ResponseDto
 import org.example.openaitts.feature.conversation.domain.models.EventType
 import org.example.openaitts.feature.conversation.domain.models.MessageItem
-import org.example.openaitts.feature.conversation.domain.models.Session
 import org.example.openaitts.feature.conversation.domain.utils.decode
-import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 
 class ConversationUseCase(
     private val remoteDataSource: RealtimeRemoteDataSource,
@@ -65,7 +61,6 @@ class ConversationUseCase(
             }
             EventType.RESPONSE_AUDIO_DONE -> {
                 Napier.d(tag = TAG) { "audio chunks done" }
-                audioFileManager.saveCached()
                 eventObject
             }
 //            EventType.RESPONSE_AUDIO_TRANSCRIPT_DELTA -> {

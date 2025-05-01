@@ -24,7 +24,7 @@ class TtsViewModel(
         viewModelScope.launch {
             when (val response = promptTTSUseCase.execute(_state.value.question ?: "")) {
                 is Result.Success -> {
-                    audioFileManager.save(response.data)
+//                    audioFileManager.save(response.data)
                     _state.update { it.copy(isResponseAvailable = true) }
                 }
                 is Result.Error -> {

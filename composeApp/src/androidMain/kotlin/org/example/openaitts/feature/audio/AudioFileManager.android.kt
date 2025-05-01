@@ -6,30 +6,11 @@ import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
 import io.github.aakira.napier.Napier
-import okio.buffer
-import okio.sink
 import java.io.File
 
 actual class AudioFileManager(private val context: Context) {
-    private var file: File? = null
     private var cachedData: ByteArray? = null
-    val audioAttributes = AudioAttributes.Builder()
-        .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
-        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-        .build()
-
-    val audioFormat = AudioFormat.Builder()
-        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-        .setSampleRate(24_000)
-        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-        .build()
-    var audioTrack: AudioTrack? = null
-
-    actual fun save(data: ByteArray) {
-        file = File(context.filesDir, FILENAME).also { file ->
-            file.sink().buffer().use { it.write(data) }
-        }
-    }
+    private var audioTrack: AudioTrack? = null
 
     actual fun cache(data: ByteArray) {
         cachedData = if (cachedData == null) {
@@ -39,26 +20,13 @@ actual class AudioFileManager(private val context: Context) {
         }
     }
 
-    actual fun saveCached() {
-        cachedData?.let { data ->
-            save(data)
-            cachedData = null
-        }
-    }
-
     actual fun play() {
-        file?.let { file ->
-            val pcmData = file.readBytes()
-
-            audioTrack = AudioTrack(
-                audioAttributes,
-                audioFormat,
-                pcmData.size,
-                AudioTrack.MODE_STATIC,
-                AudioManager.AUDIO_SESSION_ID_GENERATE
-            )
-            audioTrack!!.write(pcmData, 0, pcmData.size)
-            audioTrack!!.play()
+        cachedData?.let { pcmData ->
+            createAudioTrack(size = pcmData.size).apply {
+                audioTrack = this
+                write(pcmData, 0, pcmData.size)
+                play()
+            }
         }
     }
 
@@ -80,19 +48,30 @@ actual class AudioFileManager(private val context: Context) {
         File(context.cacheDir, "test.wav").let { file ->
             val pcmData = file.readBytes()
 
-            AudioTrack(
-                audioAttributes,
-                audioFormat,
-                pcmData.size,
-                AudioTrack.MODE_STATIC,
-                AudioManager.AUDIO_SESSION_ID_GENERATE
-            ).apply {
+            createAudioTrack(pcmData.size).apply {
                 write(pcmData, 0, pcmData.size)
                 play()
             }
         }
     }
+
+    private fun createAudioTrack(size: Int = DEFAULT_TRACK_SIZE): AudioTrack {
+        return AudioTrack(
+            AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build(),
+            AudioFormat.Builder()
+                .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                .setSampleRate(24_000)
+                .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                .build(),
+            size,
+            AudioTrack.MODE_STATIC,
+            AudioManager.AUDIO_SESSION_ID_GENERATE
+        )
+    }
 }
 
-private const val FILENAME = "tts.pcm"
 private const val TAG = "AudioFileManager"
+private const val DEFAULT_TRACK_SIZE = 10_000_000
