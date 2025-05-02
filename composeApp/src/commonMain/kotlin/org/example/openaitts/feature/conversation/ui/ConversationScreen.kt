@@ -24,7 +24,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,13 +43,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import openaitts.composeapp.generated.resources.Res
-import openaitts.composeapp.generated.resources.ic_mic_on
 import org.example.openaitts.feature.conversation.domain.models.Role
 import org.example.openaitts.feature.conversation.ui.components.RecordButton
 import org.example.openaitts.feature.conversation.ui.components.VoiceSelectorDialog
-import org.example.openaitts.theme.localAppColorPalette
-import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable

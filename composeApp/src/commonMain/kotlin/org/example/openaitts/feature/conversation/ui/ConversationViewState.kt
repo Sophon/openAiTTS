@@ -30,6 +30,7 @@ data class UiMessage(
     val type: Type,
     val role: Role,
     val text: String?,
+    val isIncomplete: Boolean = false,
 )
 
 internal fun MessageItem.toUi(): UiMessage {
@@ -41,5 +42,6 @@ internal fun MessageItem.toUi(): UiMessage {
             Content.Type.AUDIO -> this.content.last().transcript
             else -> null
         },
+        isIncomplete = this.isIncomplete,
     )
 }
