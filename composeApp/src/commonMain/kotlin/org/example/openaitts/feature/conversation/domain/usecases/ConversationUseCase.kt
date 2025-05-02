@@ -3,18 +3,18 @@ package org.example.openaitts.feature.conversation.domain.usecases
 import io.github.aakira.napier.Napier
 import io.ktor.websocket.Frame
 import io.ktor.websocket.readText
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.Result
 import org.example.openaitts.feature.audio.AudioPlayer
 import org.example.openaitts.feature.conversation.data.RealtimeRemoteDataSource
 import org.example.openaitts.feature.conversation.data.dto.ResponseDto
+import org.example.openaitts.feature.conversation.domain.models.Content
 import org.example.openaitts.feature.conversation.domain.models.EventType
 import org.example.openaitts.feature.conversation.domain.models.MessageItem
+import org.example.openaitts.feature.conversation.domain.models.Role
 import org.example.openaitts.feature.conversation.domain.utils.decode
 
 class ConversationUseCase(
@@ -24,24 +24,24 @@ class ConversationUseCase(
     private val json = Json { ignoreUnknownKeys = true }
     private var playbackStarted = false
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun establishConnection(): Flow<Result<MessageItem, DataError.Remote>> {
         remoteDataSource.closeWebsocketSession()
 
-        val flowResponse = remoteDataSource.initializeWebSocketSession(
+        return remoteDataSource.initializeWebSocketSession(
             processText = ::processText,
             processBinary = ::processBinary,
-        )
-
-        return flowResponse.flatMapLatest { dto ->
-            flow {
-                emit(
-                    if (dto.item == null) {
-                        Result.Error(DataError.Remote.UNKNOWN)
-                    } else {
-                        Result.Success(dto.item)
-                    }
-                )
+        ).map { dto ->
+            when {
+                (dto.delta != null) -> {
+                    Napier.d(tag = TAG) { "delta" }
+                    Result.Success(createMessageItemFromDelta(dto))
+                }
+                (dto.item == null) -> {
+                    Result.Error(DataError.Remote.UNKNOWN)
+                }
+                else -> {
+                    Result.Success(dto.item)
+                }
             }
         }
     }
@@ -75,11 +75,10 @@ class ConversationUseCase(
             }
             EventType.RESPONSE_AUDIO_TRANSCRIPT_DELTA -> {
                 Napier.d(tag = TAG) { "received a chunk of the audio transcript" }
-                null
+                eventObject
             }
             EventType.RESPONSE_AUDIO_TRANSCRIPT_DONE -> {
                 Napier.d(tag = TAG) { "audio transcript done" }
-                //TODO: pass the incomplete dto to the viewmodel
                 null
             }
             EventType.SESSION_UPDATED -> {
@@ -101,6 +100,20 @@ class ConversationUseCase(
         Napier.d(tag = TAG) { "received binary frame; not handled" }
 
         return null
+    }
+
+    private fun createMessageItemFromDelta(dto: ResponseDto): MessageItem {
+        return MessageItem(
+            type = MessageItem.Type.MESSAGE,
+            role = Role.ASSISTANT,
+            content = listOf(
+                Content(
+                    type = Content.Type.TEXT,
+                    text = dto.delta,
+                )
+            ),
+            isIncomplete = true,
+        )
     }
 }
 

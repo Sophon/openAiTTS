@@ -39,20 +39,16 @@ class RealtimeRemoteDataSource(
             headers { append("openai-beta", "realtime=v1") }
         }
 
-        return flow {
-            val messages = webSocketSession!!
-                .incoming
-                .consumeAsFlow()
-                .mapNotNull { frameObject ->
-                    when (frameObject) {
-                        is Frame.Text -> processText(frameObject)
-                        is Frame.Binary -> processBinary(frameObject)
-                        else -> null
-                    }
+        return webSocketSession!!
+            .incoming
+            .consumeAsFlow()
+            .mapNotNull { frameObject ->
+                when (frameObject) {
+                    is Frame.Text -> processText(frameObject)
+                    is Frame.Binary -> processBinary(frameObject)
+                    else -> null
                 }
-
-            emitAll(messages)
-        }
+            }
     }
 
     suspend fun updateSession(requestUpdateDto: RequestUpdateSessionDto): EmptyResult<DataError.Remote> {

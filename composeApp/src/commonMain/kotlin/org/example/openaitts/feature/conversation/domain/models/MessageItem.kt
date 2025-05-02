@@ -8,6 +8,7 @@ data class MessageItem(
     val type: Type,
     val role: Role,
     val content: List<Content>,
+    val isIncomplete: Boolean = false,
 ) {
     enum class Type {
         @SerialName("message") MESSAGE,
