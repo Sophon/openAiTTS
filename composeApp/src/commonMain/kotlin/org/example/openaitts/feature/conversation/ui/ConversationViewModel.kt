@@ -136,25 +136,26 @@ class ConversationViewModel(
     }
 
     private fun handleMessage(result: Result.Success<MessageItem>) {
+        val currentMessages = _state.value.messages
         if (result.data.isIncomplete.not()) {
-            Napier.d(tag = TAG) { "message completed; items: ${_state.value.messages.size}" }
+            Napier.d(tag = TAG) { "message completed; items: ${currentMessages.size}" }
             _state.update {
-                val lastMessage = it.messages.last().copy(isIncomplete = false)
-                it.copy(messages = it.messages.dropLast(1) + lastMessage)
+                val lastMessage = currentMessages.last().copy(isIncomplete = false)
+                it.copy(messages = currentMessages.dropLast(1) + lastMessage)
             }
 
             return
         }
 
         _state.update { currentState ->
-            val responses = currentState.messages.filter { it.role == Role.ASSISTANT }
+            val responses = currentMessages.filter { it.role == Role.ASSISTANT }
             val lastResponse = responses.lastOrNull()
             val updatedMessages = if (lastResponse?.isIncomplete != true) {
-                currentState.messages + result.data.toUi()
+                currentMessages + result.data.toUi()
             } else {
                 val messageChunk = result.data.content.firstOrNull()?.text.orEmpty()
                 val newLastMessage = lastResponse.copy(text = lastResponse.text + messageChunk)
-                currentState.messages.dropLast(1) + newLastMessage
+                currentMessages.dropLast(1) + newLastMessage
             }
 
             currentState.copy(messages = updatedMessages, isLoading = false)
