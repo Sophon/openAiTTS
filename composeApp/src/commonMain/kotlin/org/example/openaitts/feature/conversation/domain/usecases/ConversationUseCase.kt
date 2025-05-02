@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.Json
 import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.Result
-import org.example.openaitts.feature.audio.AudioFileManager
+import org.example.openaitts.feature.audio.AudioPlayer
 import org.example.openaitts.feature.conversation.data.RealtimeRemoteDataSource
 import org.example.openaitts.feature.conversation.data.dto.ResponseDto
 import org.example.openaitts.feature.conversation.domain.models.EventType
@@ -19,9 +19,10 @@ import org.example.openaitts.feature.conversation.domain.utils.decode
 
 class ConversationUseCase(
     private val remoteDataSource: RealtimeRemoteDataSource,
-    private val audioFileManager: AudioFileManager,
+    private val audioPlayer: AudioPlayer,
 ) {
     private val json = Json { ignoreUnknownKeys = true }
+    private var playbackStarted = false
 
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun establishConnection(): Flow<Result<MessageItem, DataError.Remote>> {
@@ -45,6 +46,7 @@ class ConversationUseCase(
         }
     }
 
+    //returning null means we're not handling it
     private fun processText(textFrame: Frame.Text): ResponseDto? {
         val text = textFrame.readText()
         val eventObject = json.decodeFromString<ResponseDto>(text)
@@ -56,21 +58,30 @@ class ConversationUseCase(
             }
             EventType.RESPONSE_AUDIO_DELTA -> {
                 Napier.d(tag = TAG) { "received audio chunk" }
-                eventObject.delta?.let { audioFileManager.cache(it.decode()) }
-                eventObject
+                eventObject.delta?.let { rawData ->
+                    audioPlayer.apply {
+                        cache(rawData.decode())
+                        if (playbackStarted.not()) {
+                            play()
+                            playbackStarted = true
+                        }
+                    }
+                }
+                null
             }
             EventType.RESPONSE_AUDIO_DONE -> {
                 Napier.d(tag = TAG) { "audio chunks done" }
                 eventObject
             }
-//            EventType.RESPONSE_AUDIO_TRANSCRIPT_DELTA -> {
-//                Napier.d(tag = TAG) { "received audio transcript chunk" }
-//                null
-//            }
-//            EventType.RESPONSE_AUDIO_TRANSCRIPT_DONE -> {
-//                Napier.d(tag = TAG) { "audio transcript done" }
-//                null
-//            }
+            EventType.RESPONSE_AUDIO_TRANSCRIPT_DELTA -> {
+                Napier.d(tag = TAG) { "received a chunk of the audio transcript" }
+                null
+            }
+            EventType.RESPONSE_AUDIO_TRANSCRIPT_DONE -> {
+                Napier.d(tag = TAG) { "audio transcript done" }
+                //TODO: pass the incomplete dto to the viewmodel
+                null
+            }
             EventType.SESSION_UPDATED -> {
                 Napier.d(tag = TAG) { "session updated: $eventObject" }
                 null

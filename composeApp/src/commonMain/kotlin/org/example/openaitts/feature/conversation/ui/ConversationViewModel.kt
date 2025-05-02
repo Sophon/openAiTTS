@@ -50,7 +50,7 @@ class ConversationViewModel(
 
     fun sendMessage() {
         _state.update { it.copy(isLoading = true) }
-        audioPlaybackUseCase.stop()
+//        audioPlaybackUseCase.stop()
 
         viewModelScope.launch {
             when (
@@ -140,8 +140,6 @@ class ConversationViewModel(
             it.copy(messages = it.messages + result.data.toUi(), isLoading = false)
         }
         Napier.d(tag = TAG) { "items: ${_state.value.messages.size}" }
-
-        audioPlaybackUseCase.play()
     }
 }
 

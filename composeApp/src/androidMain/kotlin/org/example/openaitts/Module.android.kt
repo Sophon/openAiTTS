@@ -2,7 +2,7 @@ package org.example.openaitts
 
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.CIO
-import org.example.openaitts.feature.audio.AudioFileManager
+import org.example.openaitts.feature.audio.AudioPlayer
 import org.koin.dsl.module
 
 actual val platformModule = module {
@@ -10,5 +10,5 @@ actual val platformModule = module {
     single<HttpClientEngine> { CIO.create() }
 
     //tts
-    single { AudioFileManager(get()) }
+    single { AudioPlayer(get()) }
 }

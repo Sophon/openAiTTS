@@ -1,14 +1,14 @@
 package org.example.openaitts.feature.conversation.domain.usecases
 
-import org.example.openaitts.feature.audio.AudioFileManager
+import org.example.openaitts.feature.audio.AudioPlayer
 import org.example.openaitts.feature.audio.AudioRecorder
 
 class RecordAudioUseCase(
     private val audioRecorder: AudioRecorder,
-    private val audioFileManager: AudioFileManager,
+    private val audioPlayer: AudioPlayer,
 ) {
     fun execute() {
-        audioFileManager.stop()
+//        audioPlayer.stop()
         audioRecorder.record()
     }
 }

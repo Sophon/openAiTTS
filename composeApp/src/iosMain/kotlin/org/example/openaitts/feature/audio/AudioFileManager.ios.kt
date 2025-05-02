@@ -4,7 +4,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import platform.AVFAudio.AVAudioPlayer
 import platform.Foundation.NSURL
 
-actual class AudioFileManager {
+actual class AudioPlayer {
     private var player: AVAudioPlayer? = null
     private var path: String = ""
 
@@ -29,9 +29,5 @@ actual class AudioFileManager {
 
     actual fun retrieveFile(path: String): ByteArray? {
         TODO()
-    }
-
-    actual fun testPlay() {
-        //TODO
     }
 }

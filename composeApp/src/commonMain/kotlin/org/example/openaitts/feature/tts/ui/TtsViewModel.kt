@@ -8,12 +8,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.example.openaitts.core.domain.Result
-import org.example.openaitts.feature.audio.AudioFileManager
+import org.example.openaitts.feature.audio.AudioPlayer
 import org.example.openaitts.feature.tts.domain.PromptTTSUseCase
 
 class TtsViewModel(
     private val promptTTSUseCase: PromptTTSUseCase,
-    private val audioFileManager: AudioFileManager,
+    private val audioFileManager: AudioPlayer,
 ): ViewModel() {
     private val _state = MutableStateFlow(TtsViewState())
     val state: StateFlow<TtsViewState> = _state
