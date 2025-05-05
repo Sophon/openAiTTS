@@ -11,12 +11,15 @@ import org.example.openaitts.feature.conversation.domain.usecases.SendConversati
 import org.example.openaitts.feature.conversation.domain.usecases.StopAudioRecordingUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.UpdateVoiceUseCase
 import org.example.openaitts.feature.conversation.ui.ConversationViewModel
+import org.example.openaitts.feature.transcription.TranscriptionRemoteDataSource
+import org.example.openaitts.feature.transcription.TranscriptionRemoteDataSourceImpl
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.KoinAppDeclaration
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 fun initKoin(config: KoinAppDeclaration? = null): KoinApplication {
@@ -52,5 +55,9 @@ val sharedModule = module {
     //region Audio
     singleOf(::AudioPlaybackUseCase)
     singleOf(::AudioRecorder)
+    //endregion
+
+    //region Transcription
+    singleOf(::TranscriptionRemoteDataSourceImpl).bind<TranscriptionRemoteDataSource>()
     //endregion
 }

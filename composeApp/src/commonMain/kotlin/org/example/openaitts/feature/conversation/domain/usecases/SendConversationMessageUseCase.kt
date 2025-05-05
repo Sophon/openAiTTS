@@ -1,6 +1,8 @@
 package org.example.openaitts.feature.conversation.domain.usecases
 
-import kotlinx.datetime.Clock
+import io.github.aakira.napier.Napier
+import org.example.openaitts.core.data.BASE_URL
+import org.example.openaitts.core.data.TRANSCRIPTION_URL
 import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.EmptyResult
 import org.example.openaitts.core.domain.Result
@@ -15,14 +17,14 @@ import org.example.openaitts.feature.conversation.domain.models.MessageItem
 import org.example.openaitts.feature.conversation.domain.models.Modality
 import org.example.openaitts.feature.conversation.domain.models.Role
 import org.example.openaitts.feature.conversation.domain.utils.encode
+import org.example.openaitts.feature.transcription.TranscriptionRemoteDataSource
 
 class SendConversationMessageUseCase(
-    private val remoteDataSource: RealtimeRemoteDataSource,
+    private val realtimeDataSource: RealtimeRemoteDataSource,
+    private val transcriptionDataSource: TranscriptionRemoteDataSource,
     private val audioPlayer: AudioPlayer,
     private val audioRecorder: AudioRecorder,
 ) {
-    private var eventId: String? = null
-
     suspend fun sendTextMessage(
         message: String,
         useAudio: Boolean = false
@@ -38,7 +40,7 @@ class SendConversationMessageUseCase(
             )
         )
 
-        return when (val response = remoteDataSource.send(requestCreateItemDto)) {
+        return when (val response = realtimeDataSource.send(requestCreateItemDto)) {
             is Result.Success -> requestResponse(useAudio)
             is Result.Error -> response
         }
@@ -47,10 +49,8 @@ class SendConversationMessageUseCase(
     suspend fun sendVoiceMessage(): EmptyResult<DataError.Remote> {
         audioRecorder.location?.let { recordingFilePath ->
             audioPlayer.retrieveFile(recordingFilePath)?.let { data ->
-                eventId = Clock.System.now().epochSeconds.toString()
                 val requestDto = RequestCreateItemDto(
                     type = EventType.ITEM_CREATE,
-                    eventId = eventId,
                     item = MessageItem(
                         type = MessageItem.Type.MESSAGE,
                         role = Role.USER,
@@ -60,18 +60,16 @@ class SendConversationMessageUseCase(
                     )
                 )
 
-                return when (val response = remoteDataSource.send(requestDto)) {
+                return when (val response = realtimeDataSource.send(requestDto)) {
                     is Result.Success -> {
-//                        when (val result = transcriptionRemoteDataSource.sendAudio(
-//                            TranscriptionRequestDto(file = data)
-//                        )) {
-//                            is Result.Success -> {
-//                                Napier.d(tag = TAG) { "received transcription ${result.data}" }
-//                            }
-//                            is Result.Error -> Napier.e { result.error.toString() }
-//                        }
+                        when (val result = transcriptionDataSource.transcribeAudioFile(data)) {
+                            is Result.Success -> {
+                                Napier.d(tag = TAG) { "received transcription ${result.data}" }
+                                //TODO
+                            }
+                            is Result.Error -> Napier.e(tag = TAG) { result.error.toString() }
+                        }
 
-                        //TODO: retrieve
                         requestResponse(true)
                     }
                     is Result.Error -> response
@@ -93,11 +91,7 @@ class SendConversationMessageUseCase(
             )
         )
 
-        return remoteDataSource.requestResponse(requestResponseDto)
-    }
-
-    private suspend fun retrieveTranscript() {
-        //TODO: is it needed?
+        return realtimeDataSource.requestResponse(requestResponseDto)
     }
 }
 
