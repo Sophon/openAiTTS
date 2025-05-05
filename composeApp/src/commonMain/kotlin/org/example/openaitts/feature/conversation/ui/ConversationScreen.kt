@@ -146,7 +146,7 @@ private fun Content(
             text = state.query,
             onTextChange = vm::onQueryChange,
             isSendEnabled = state.isSendEnabled,
-            onSend = vm::sendMessage,
+            onSend = vm::sendTextMessage,
             recordingStatus = state.recordingStatus,
             onStartRecording = vm::startRecording,
             onStopRecording = vm::stopRecording,

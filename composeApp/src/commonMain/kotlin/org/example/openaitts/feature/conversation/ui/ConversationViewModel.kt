@@ -50,8 +50,7 @@ class ConversationViewModel(
         }
     }
 
-    //TODO: rename to sendTextMessage
-    fun sendMessage() {
+    fun sendTextMessage() {
         _state.update { it.copy(isLoading = true) }
 //        audioPlaybackUseCase.stop()
 
@@ -109,16 +108,7 @@ class ConversationViewModel(
                 is Result.Success -> {
                     Napier.d(tag = TAG) { "transcription: ${transcription.data}" }
                     addUserMessage(text = transcription.data)
-
-                    when (val result = sendMessageUseCase.sendVoiceMessage()) {
-                        is Result.Success -> {
-                            Napier.d(tag = TAG) { "audio success" }
-                        }
-                        is Result.Error -> {
-                            Napier.e(tag = TAG) { result.error.toString() }
-                            _state.update { it.copy(error = result.error.toString()) }
-                        }
-                    }
+                    sendAudioMessage()
                 }
                 is Result.Error -> {
                     Napier.e(tag = TAG) { "transcription error: " + transcription.error.toString() }
@@ -178,6 +168,18 @@ class ConversationViewModel(
             text = text,
         )
         _state.update { it.copy(messages = it.messages + newMessage) }
+    }
+
+    private suspend fun sendAudioMessage() {
+        when (val result = sendMessageUseCase.sendVoiceMessage()) {
+            is Result.Success -> {
+                Napier.d(tag = TAG) { "audio success" }
+            }
+            is Result.Error -> {
+                Napier.e(tag = TAG) { result.error.toString() }
+                _state.update { it.copy(error = result.error.toString()) }
+            }
+        }
     }
 }
 
