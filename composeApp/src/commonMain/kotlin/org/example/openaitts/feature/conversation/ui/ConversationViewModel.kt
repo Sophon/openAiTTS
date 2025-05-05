@@ -20,9 +20,11 @@ import org.example.openaitts.feature.conversation.domain.usecases.RecordAudioUse
 import org.example.openaitts.feature.conversation.domain.usecases.SendConversationMessageUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.StopAudioRecordingUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.UpdateVoiceUseCase
+import org.example.openaitts.feature.transcription.TranscribeAudioMessageUseCase
 
 class ConversationViewModel(
     private val conversationUseCase: ConversationUseCase,
+    private val transcribeAudioMessageUseCase: TranscribeAudioMessageUseCase,
     private val sendMessageUseCase: SendConversationMessageUseCase,
     private val audioPlaybackUseCase: AudioPlaybackUseCase,
     private val updateVoiceUseCase: UpdateVoiceUseCase,
@@ -48,6 +50,7 @@ class ConversationViewModel(
         }
     }
 
+    //TODO: rename to sendTextMessage
     fun sendMessage() {
         _state.update { it.copy(isLoading = true) }
 //        audioPlaybackUseCase.stop()
@@ -57,12 +60,7 @@ class ConversationViewModel(
                 val result = sendMessageUseCase.sendTextMessage(message = _typedQuery.value, useAudio = true)
             ) {
                 is Result.Success -> {
-                    val newMessage = UiMessage(
-                        type = MessageItem.Type.MESSAGE,
-                        role = Role.USER,
-                        text = _typedQuery.value,
-                    )
-                    _state.update { it.copy(messages = it.messages + newMessage) }
+                    addUserMessage(text = _typedQuery.value)
                     Napier.d(tag = TAG) { "items: ${_state.value.messages.size}" }
                 }
                 is Result.Error -> {
@@ -107,13 +105,24 @@ class ConversationViewModel(
         stopAudioRecordingUseCase.execute()
 
         viewModelScope.launch {
-            when (val result = sendMessageUseCase.sendVoiceMessage()) {
+            when (val transcription = transcribeAudioMessageUseCase.execute()) {
                 is Result.Success -> {
-                    Napier.d(tag = TAG) { "audio success" }
+                    Napier.d(tag = TAG) { "transcription: ${transcription.data}" }
+                    addUserMessage(text = transcription.data)
+
+                    when (val result = sendMessageUseCase.sendVoiceMessage()) {
+                        is Result.Success -> {
+                            Napier.d(tag = TAG) { "audio success" }
+                        }
+                        is Result.Error -> {
+                            Napier.e(tag = TAG) { result.error.toString() }
+                            _state.update { it.copy(error = result.error.toString()) }
+                        }
+                    }
                 }
                 is Result.Error -> {
-                    Napier.e(tag = TAG) { result.error.toString() }
-                    _state.update { it.copy(error = result.error.toString()) }
+                    Napier.e(tag = TAG) { "transcription error: " + transcription.error.toString() }
+                    _state.update { it.copy(error = transcription.error.toString()) }
                 }
             }
         }
@@ -160,6 +169,15 @@ class ConversationViewModel(
 
             currentState.copy(messages = updatedMessages, isLoading = false)
         }
+    }
+
+    private fun addUserMessage(text: String) {
+        val newMessage = UiMessage(
+            type = MessageItem.Type.MESSAGE,
+            role = Role.USER,
+            text = text,
+        )
+        _state.update { it.copy(messages = it.messages + newMessage) }
     }
 }
 

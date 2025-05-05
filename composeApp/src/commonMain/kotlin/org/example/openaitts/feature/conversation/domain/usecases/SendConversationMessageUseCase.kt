@@ -1,8 +1,5 @@
 package org.example.openaitts.feature.conversation.domain.usecases
 
-import io.github.aakira.napier.Napier
-import org.example.openaitts.core.data.BASE_URL
-import org.example.openaitts.core.data.TRANSCRIPTION_URL
 import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.EmptyResult
 import org.example.openaitts.core.domain.Result
@@ -17,11 +14,9 @@ import org.example.openaitts.feature.conversation.domain.models.MessageItem
 import org.example.openaitts.feature.conversation.domain.models.Modality
 import org.example.openaitts.feature.conversation.domain.models.Role
 import org.example.openaitts.feature.conversation.domain.utils.encode
-import org.example.openaitts.feature.transcription.TranscriptionRemoteDataSource
 
 class SendConversationMessageUseCase(
     private val realtimeDataSource: RealtimeRemoteDataSource,
-    private val transcriptionDataSource: TranscriptionRemoteDataSource,
     private val audioPlayer: AudioPlayer,
     private val audioRecorder: AudioRecorder,
 ) {
@@ -62,14 +57,6 @@ class SendConversationMessageUseCase(
 
                 return when (val response = realtimeDataSource.send(requestDto)) {
                     is Result.Success -> {
-                        when (val result = transcriptionDataSource.transcribeAudioFile(data)) {
-                            is Result.Success -> {
-                                Napier.d(tag = TAG) { "received transcription ${result.data}" }
-                                //TODO
-                            }
-                            is Result.Error -> Napier.e(tag = TAG) { result.error.toString() }
-                        }
-
                         requestResponse(true)
                     }
                     is Result.Error -> response
