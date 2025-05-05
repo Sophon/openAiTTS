@@ -11,6 +11,7 @@ enum class EventType {
     //client side
     @SerialName("response.create") RESPONSE_CREATE,
     @SerialName("conversation.item.create") ITEM_CREATE,
+    @SerialName("conversation.item.retrieve") ITEM_RETRIEVE,
 
     //server side
     @SerialName("conversation.item.created") ITEM_CREATED,

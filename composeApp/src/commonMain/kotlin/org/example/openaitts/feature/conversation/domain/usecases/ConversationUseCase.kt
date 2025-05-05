@@ -10,11 +10,13 @@ import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.Result
 import org.example.openaitts.feature.audio.AudioPlayer
 import org.example.openaitts.feature.conversation.data.RealtimeRemoteDataSource
+import org.example.openaitts.feature.conversation.data.dto.RequestUpdateSessionDto
 import org.example.openaitts.feature.conversation.data.dto.ResponseDto
 import org.example.openaitts.feature.conversation.domain.models.Content
 import org.example.openaitts.feature.conversation.domain.models.EventType
 import org.example.openaitts.feature.conversation.domain.models.MessageItem
 import org.example.openaitts.feature.conversation.domain.models.Role
+import org.example.openaitts.feature.conversation.domain.models.Session
 import org.example.openaitts.feature.conversation.domain.utils.decode
 
 class ConversationUseCase(
@@ -27,7 +29,7 @@ class ConversationUseCase(
     suspend fun establishConnection(): Flow<Result<MessageItem, DataError.Remote>> {
         remoteDataSource.closeWebsocketSession()
 
-        return remoteDataSource.initializeWebSocketSession(
+        val flow = remoteDataSource.initializeWebSocketSession(
             processText = ::processText,
             processBinary = ::processBinary,
         ).map { dto ->
@@ -44,6 +46,10 @@ class ConversationUseCase(
                 }
             }
         }
+
+        updateToAudioTranscription()
+
+        return flow
     }
 
     //returning null means we're not handling it
@@ -67,6 +73,10 @@ class ConversationUseCase(
                         }
                     }
                 }
+                null
+            }
+            EventType.ITEM_CREATED -> {
+                Napier.d(tag = TAG) { "item created: $eventObject" }
                 null
             }
             EventType.RESPONSE_AUDIO_DONE -> {
@@ -114,6 +124,21 @@ class ConversationUseCase(
             ),
             isIncomplete = true,
         )
+    }
+
+    private suspend fun updateToAudioTranscription() {
+        val dto = RequestUpdateSessionDto(
+            type = EventType.SESSION_UPDATE,
+            session = Session(
+                inputAudioTranscription = Session.InputAudioTranscription(
+                    language = "en",
+                    model = "whisper-1",
+                    prompt = "Use a British accent.",
+                ),
+            )
+        )
+
+        remoteDataSource.updateSession(dto)
     }
 }
 

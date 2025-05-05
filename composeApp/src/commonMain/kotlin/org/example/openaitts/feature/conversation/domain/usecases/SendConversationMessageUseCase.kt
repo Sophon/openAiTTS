@@ -1,5 +1,6 @@
 package org.example.openaitts.feature.conversation.domain.usecases
 
+import kotlinx.datetime.Clock
 import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.EmptyResult
 import org.example.openaitts.core.domain.Result
@@ -46,8 +47,10 @@ class SendConversationMessageUseCase(
     suspend fun sendVoiceMessage(): EmptyResult<DataError.Remote> {
         audioRecorder.location?.let { recordingFilePath ->
             audioPlayer.retrieveFile(recordingFilePath)?.let { data ->
+                eventId = Clock.System.now().epochSeconds.toString()
                 val requestDto = RequestCreateItemDto(
                     type = EventType.ITEM_CREATE,
+                    eventId = eventId,
                     item = MessageItem(
                         type = MessageItem.Type.MESSAGE,
                         role = Role.USER,
@@ -68,6 +71,7 @@ class SendConversationMessageUseCase(
 //                            is Result.Error -> Napier.e { result.error.toString() }
 //                        }
 
+                        //TODO: retrieve
                         requestResponse(true)
                     }
                     is Result.Error -> response
@@ -90,6 +94,10 @@ class SendConversationMessageUseCase(
         )
 
         return remoteDataSource.requestResponse(requestResponseDto)
+    }
+
+    private suspend fun retrieveTranscript() {
+        //TODO: is it needed?
     }
 }
 
