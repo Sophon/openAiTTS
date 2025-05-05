@@ -11,6 +11,7 @@ import org.example.openaitts.feature.conversation.domain.usecases.SendConversati
 import org.example.openaitts.feature.conversation.domain.usecases.StopAudioRecordingUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.UpdateVoiceUseCase
 import org.example.openaitts.feature.conversation.ui.ConversationViewModel
+import org.example.openaitts.feature.transcription.TranscribeAudioMessageUseCase
 import org.example.openaitts.feature.transcription.TranscriptionRemoteDataSource
 import org.example.openaitts.feature.transcription.TranscriptionRemoteDataSourceImpl
 import org.koin.core.KoinApplication
@@ -42,7 +43,7 @@ val sharedModule = module {
 
     //region Conversation
     viewModel {
-        ConversationViewModel(get(), get(), get(), get(), get(), get())
+        ConversationViewModel(get(), get(), get(), get(), get(), get(), get())
     }
     singleOf(::RealtimeRemoteDataSource)
     singleOf(::ConversationUseCase)
@@ -59,5 +60,6 @@ val sharedModule = module {
 
     //region Transcription
     singleOf(::TranscriptionRemoteDataSourceImpl).bind<TranscriptionRemoteDataSource>()
+    singleOf(::TranscribeAudioMessageUseCase)
     //endregion
 }

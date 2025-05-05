@@ -14,13 +14,13 @@ import org.example.openaitts.core.domain.Result
 import org.example.openaitts.core.network.safeCall
 
 interface TranscriptionRemoteDataSource {
-    suspend fun transcribeAudioFile(audioFile: ByteArray): Result<Transcription, DataError.Remote>
+    suspend fun transcribeAudioFile(fileName: String, audioFile: ByteArray): Result<Transcription, DataError.Remote>
 }
 
 class TranscriptionRemoteDataSourceImpl(
     private val client: HttpClient,
 ): TranscriptionRemoteDataSource {
-    override suspend fun transcribeAudioFile(audioFile: ByteArray): Result<Transcription, DataError.Remote> {
+    override suspend fun transcribeAudioFile(fileName: String, audioFile: ByteArray): Result<Transcription, DataError.Remote> {
         return safeCall {
             client.submitFormWithBinaryData(
                 url = URL,
@@ -33,7 +33,7 @@ class TranscriptionRemoteDataSourceImpl(
                         key = "file",
                         value = audioFile,
                         headers = Headers.build {
-                            append(HttpHeaders.ContentDisposition, "form-data; name=\"file\"; filename=\"snow.wav\"")
+                            append(HttpHeaders.ContentDisposition, "form-data; name=\"file\"; filename=\"$fileName\"")
                             append(HttpHeaders.ContentType, "audio/wav")
                         }
                     )
