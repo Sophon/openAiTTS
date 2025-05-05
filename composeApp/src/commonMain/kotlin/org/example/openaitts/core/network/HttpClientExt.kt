@@ -6,8 +6,8 @@ import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.statement.HttpResponse
 import io.ktor.util.network.UnresolvedAddressException
 import kotlinx.coroutines.ensureActive
-import org.example.openaitts.core.domain.Result
 import org.example.openaitts.core.domain.DataError
+import org.example.openaitts.core.domain.Result
 import kotlin.coroutines.coroutineContext
 
 
