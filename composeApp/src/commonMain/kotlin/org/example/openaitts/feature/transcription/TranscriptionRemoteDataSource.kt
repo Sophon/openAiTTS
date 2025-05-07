@@ -27,7 +27,7 @@ class TranscriptionRemoteDataSourceImpl(
                 formData = formData {
                     append(
                         key = "model",
-                        value = "gpt-4o-transcribe",
+                        value = "whisper-1",
                     )
                     append(
                         key = "file",
