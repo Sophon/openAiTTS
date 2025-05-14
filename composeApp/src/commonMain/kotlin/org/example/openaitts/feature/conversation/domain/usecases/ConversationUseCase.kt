@@ -133,7 +133,6 @@ class ConversationUseCase(
                 inputAudioTranscription = Session.InputAudioTranscription(
                     language = "en",
                     model = "whisper-1",
-                    prompt = "Use a British accent.",
                 ),
             )
         )
