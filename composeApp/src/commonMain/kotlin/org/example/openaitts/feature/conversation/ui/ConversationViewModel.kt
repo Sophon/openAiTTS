@@ -99,8 +99,7 @@ class ConversationViewModel(
     }
 
     fun stopRecording() {
-//        _state.update { it.copy(recordingStatus = ConversationViewState.RecordingStatus.DISABLED) }
-        _state.update { it.copy(recordingStatus = ConversationViewState.RecordingStatus.IDLE) }
+        _state.update { it.copy(recordingStatus = ConversationViewState.RecordingStatus.DISABLED) }
         stopAudioRecordingUseCase.execute()
 
         viewModelScope.launch {
@@ -140,7 +139,7 @@ class ConversationViewModel(
             Napier.d(tag = TAG) { "message completed; items: ${currentMessages.size}" }
             _state.update {
                 val lastMessage = currentMessages.last().copy(isIncomplete = false)
-                it.copy(messages = currentMessages.dropLast(1) + lastMessage)
+                it.copy(messages = currentMessages.dropLast(1) + lastMessage, recordingStatus = ConversationViewState.RecordingStatus.IDLE)
             }
 
             return
@@ -157,7 +156,7 @@ class ConversationViewModel(
                 currentMessages.dropLast(1) + newLastMessage
             }
 
-            currentState.copy(messages = updatedMessages, isLoading = false)
+            currentState.copy(messages = updatedMessages, isLoading = false, recordingStatus = ConversationViewState.RecordingStatus.DISABLED)
         }
     }
 

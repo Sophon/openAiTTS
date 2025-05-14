@@ -14,7 +14,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import java.io.File
-import java.io.FileOutputStream
 
 actual class AudioPlayer(private val context: Context) {
     private val audioTrack = createAudioTrack()
@@ -94,6 +93,7 @@ actual class AudioPlayer(private val context: Context) {
         while (audioChannel.isEmpty.not()) {
             audioChannel.tryReceive().getOrNull()
         }
+        Napier.d(tag = TAG) { "audio channel cleared" }
     }
 }
 
