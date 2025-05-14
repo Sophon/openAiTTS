@@ -118,6 +118,8 @@ class ConversationViewModel(
     }
 
     private suspend fun connect() {
+        conversationUseCase.establishRTCConnection(viewModelScope)
+
         conversationUseCase
             .establishConnection()
             .collectLatest { result ->

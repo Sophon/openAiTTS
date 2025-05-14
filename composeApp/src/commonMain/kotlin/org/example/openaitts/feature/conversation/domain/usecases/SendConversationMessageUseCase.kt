@@ -5,7 +5,7 @@ import org.example.openaitts.core.domain.EmptyResult
 import org.example.openaitts.core.domain.Result
 import org.example.openaitts.feature.audio.AudioPlayer
 import org.example.openaitts.feature.audio.AudioRecorder
-import org.example.openaitts.feature.conversation.data.RealtimeRemoteDataSource
+import org.example.openaitts.feature.conversation.data.RealtimeWebSocketDataSource
 import org.example.openaitts.feature.conversation.data.dto.RequestCreateItemDto
 import org.example.openaitts.feature.conversation.data.dto.RequestResponseDto
 import org.example.openaitts.feature.conversation.domain.models.Content
@@ -16,7 +16,7 @@ import org.example.openaitts.feature.conversation.domain.models.Role
 import org.example.openaitts.feature.conversation.domain.utils.encode
 
 class SendConversationMessageUseCase(
-    private val realtimeDataSource: RealtimeRemoteDataSource,
+    private val realtimeDataSource: RealtimeWebSocketDataSource,
     private val audioPlayer: AudioPlayer,
     private val audioRecorder: AudioRecorder,
 ) {

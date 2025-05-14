@@ -23,7 +23,7 @@ import org.example.openaitts.feature.conversation.data.dto.RequestResponseDto
 import org.example.openaitts.feature.conversation.data.dto.RequestUpdateSessionDto
 import org.example.openaitts.feature.conversation.data.dto.ResponseDto
 
-class RealtimeRemoteDataSource(
+class RealtimeWebSocketDataSource(
     private val httpClient: HttpClient,
 ) {
     private var webSocketSession: WebSocketSession? = null

@@ -16,7 +16,7 @@ data class Session(
     val turnDetection: TurnDetection? = null,
     val temperature: Double? = null,
     val maxResponseOutputTokens: Int? = null,
-    val clientSecret: ClientSecret? = null,
+    @SerialName("client_secret") val clientSecret: ClientSecret? = null,
 ) {
     enum class AudioFormat {
         @SerialName("pcm16") PCM16,
@@ -43,6 +43,6 @@ data class Session(
     @Serializable
     data class ClientSecret(
         val value: String,
-        val expiresAt: Long
+        @SerialName("expires_at") val expiresAt: Long,
     )
 }
