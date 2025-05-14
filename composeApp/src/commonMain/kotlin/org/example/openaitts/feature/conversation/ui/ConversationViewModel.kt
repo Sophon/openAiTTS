@@ -121,7 +121,7 @@ class ConversationViewModel(
         conversationUseCase.establishRTCConnection(viewModelScope)
 
         conversationUseCase
-            .establishConnection()
+            .establishWebSocketConnection()
             .collectLatest { result ->
             when (result) {
                 is Result.Success -> {

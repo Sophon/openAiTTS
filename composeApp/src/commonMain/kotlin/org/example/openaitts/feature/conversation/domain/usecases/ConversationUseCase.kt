@@ -4,15 +4,12 @@ import com.shepeliev.webrtckmp.AudioStreamTrack
 import com.shepeliev.webrtckmp.IceCandidate
 import com.shepeliev.webrtckmp.MediaDevices
 import com.shepeliev.webrtckmp.MediaStream
-import com.shepeliev.webrtckmp.MediaStreamTrack
 import com.shepeliev.webrtckmp.MediaStreamTrackKind
 import com.shepeliev.webrtckmp.OfferAnswerOptions
 import com.shepeliev.webrtckmp.PeerConnection
-import com.shepeliev.webrtckmp.RtcConfiguration
 import com.shepeliev.webrtckmp.SessionDescription
 import com.shepeliev.webrtckmp.SessionDescriptionType
 import com.shepeliev.webrtckmp.SignalingState
-import com.shepeliev.webrtckmp.TrackEvent
 import com.shepeliev.webrtckmp.onConnectionStateChange
 import com.shepeliev.webrtckmp.onIceCandidate
 import com.shepeliev.webrtckmp.onIceConnectionStateChange
@@ -31,7 +28,6 @@ import kotlinx.serialization.json.Json
 import org.example.openaitts.core.data.MODEL_REALTIME
 import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.Result
-import org.example.openaitts.core.domain.map
 import org.example.openaitts.core.domain.onError
 import org.example.openaitts.core.domain.onSuccess
 import org.example.openaitts.feature.audio.AudioPlayer
@@ -60,7 +56,7 @@ class ConversationUseCase(
     private val pc2 = PeerConnection()
     private lateinit var localStream: MediaStream
 
-    suspend fun establishConnection(): Flow<Result<MessageItem, DataError.Remote>> {
+    suspend fun establishWebSocketConnection(): Flow<Result<MessageItem, DataError.Remote>> {
         remoteDataSource.closeWebsocketSession()
 
         val flow = remoteDataSource.initializeWebSocketSession(
@@ -91,7 +87,7 @@ class ConversationUseCase(
 
         configurePeerConnections(scope) { audioStreamTrack ->
             //TODO: implement what to do with the received track
-            Napier.d(tag = TAG2) { "audio stream track id: ${audioStreamTrack.id}" }
+            Napier.d(tag = "Sorry") { "audio stream track id: ${audioStreamTrack.id}" }
         }
 
         signal()
@@ -100,11 +96,11 @@ class ConversationUseCase(
     private suspend fun getSession() {
         rtcSource.getSession(RequestSessionDto(model = MODEL_REALTIME))
             .onSuccess { session ->
-                Napier.d(tag = TAG2) { "Succcess; ${session.clientSecret}" }
+                Napier.d(tag = "Sorry") { "Succcess; ${session.clientSecret}" }
                 this.session = session
             }
             .onError { error ->
-                Napier.d(tag = TAG2) { error.toString() }
+                Napier.d(tag = "Sorry") { error.toString() }
             }
     }
 
@@ -120,7 +116,7 @@ class ConversationUseCase(
             localStream.tracks.forEach { pc1.addTrack(it) }
 
             onIceCandidate.onEach { iceCandidate ->
-                Napier.d(tag = TAG2) { "onIceCandidate (PC1): $iceCandidate" }
+                Napier.d(tag = "Sorry") { "onIceCandidate (PC1): $iceCandidate" }
                 if (pc2.signalingState == SignalingState.HaveRemoteOffer) {
                     pc2.addIceCandidate(iceCandidate)
                 } else {
@@ -129,7 +125,7 @@ class ConversationUseCase(
             }.launchIn(scope)
 
             onSignalingStateChange.onEach { signalingState ->
-                Napier.d(tag = TAG2) { "onSignalingStateChange (PC1): $signalingState" }
+                Napier.d(tag = "Sorry") { "onSignalingStateChange (PC1): $signalingState" }
                 if (signalingState == SignalingState.HaveRemoteOffer) {
                     pc2IceCandidates.forEach { pc1.addIceCandidate(it) }
                     pc2IceCandidates.clear()
@@ -137,21 +133,21 @@ class ConversationUseCase(
             }.launchIn(scope)
 
             onIceConnectionStateChange.onEach {
-                Napier.d(tag = TAG2) { "onIceConnectionStateChange (PC1): $it" }
+                Napier.d(tag = "Sorry") { "onIceConnectionStateChange (PC1): $it" }
             }.launchIn(scope)
 
             onConnectionStateChange.onEach { peerConnectionState ->
-                Napier.d(tag = TAG2) { "onConnectionStateChange (PC1): $peerConnectionState" }
+                Napier.d(tag = "Sorry") { "onConnectionStateChange (PC1): $peerConnectionState" }
             }.launchIn(scope)
 
             onTrack.onEach { trackEvent ->
-                Napier.d(tag = TAG2) { "onTrack (PC1): $trackEvent" }
+                Napier.d(tag = "Sorry") { "onTrack (PC1): $trackEvent" }
             }.launchIn(scope)
         }
 
         pc2.apply {
             onIceCandidate.onEach { iceCandidate ->
-                Napier.d(tag = TAG2) { "onIceCandidate (PC2): $iceCandidate" }
+                Napier.d(tag = "Sorry") { "onIceCandidate (PC2): $iceCandidate" }
                 if (pc1.signalingState == SignalingState.HaveRemoteOffer) {
                     pc1.addIceCandidate(iceCandidate)
                 } else {
@@ -160,7 +156,7 @@ class ConversationUseCase(
             }.launchIn(scope)
 
             onSignalingStateChange.onEach { signalingState ->
-                Napier.d(tag = TAG2) { "onSignalingStateChange (PC2): $signalingState" }
+                Napier.d(tag = "Sorry") { "onSignalingStateChange (PC2): $signalingState" }
                 if (signalingState == SignalingState.HaveRemoteOffer) {
                     pc1IceCandidates.forEach { pc2.addIceCandidate(it) }
                     pc1IceCandidates.clear()
@@ -168,16 +164,16 @@ class ConversationUseCase(
             }.launchIn(scope)
 
             onIceConnectionStateChange.onEach {
-                Napier.d(tag = TAG2) { "onIceConnectionStateChange (PC2): $it" }
+                Napier.d(tag = "Sorry") { "onIceConnectionStateChange (PC2): $it" }
             }.launchIn(scope)
 
             onConnectionStateChange.onEach { peerConnectionState ->
-                Napier.d(tag = TAG2) { "onConnectionStateChange (PC2): $peerConnectionState" }
+                Napier.d(tag = "Sorry") { "onConnectionStateChange (PC2): $peerConnectionState" }
             }.launchIn(scope)
 
             onTrack
                 .onEach { trackEvent ->
-                    Napier.d(tag = TAG2) { "PC2 onTrack: ${trackEvent.track?.kind}" }
+                    Napier.d(tag = "Sorry") { "PC2 onTrack: ${trackEvent.track?.kind}" }
                 }
                 .map { it.track }
                 .filterNotNull()
@@ -207,7 +203,7 @@ class ConversationUseCase(
                     pc2.setLocalDescription(description)
                     pc1.setRemoteDescription(description)
                 }
-                .onError { error -> Napier.e(tag = TAG2) { error.toString() } }
+                .onError { error -> Napier.e(tag = "Sorry") { error.toString() } }
         }
     }
 
@@ -301,4 +297,3 @@ class ConversationUseCase(
 }
 
 private const val TAG = "ConversationUseCase"
-private const val TAG2 = "WebRTCKMP"
