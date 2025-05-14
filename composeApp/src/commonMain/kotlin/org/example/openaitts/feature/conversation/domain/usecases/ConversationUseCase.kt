@@ -2,6 +2,7 @@ package org.example.openaitts.feature.conversation.domain.usecases
 
 import com.shepeliev.webrtckmp.AudioStreamTrack
 import com.shepeliev.webrtckmp.IceCandidate
+import com.shepeliev.webrtckmp.MediaDevices
 import com.shepeliev.webrtckmp.MediaStream
 import com.shepeliev.webrtckmp.MediaStreamTrack
 import com.shepeliev.webrtckmp.MediaStreamTrackKind
@@ -57,6 +58,7 @@ class ConversationUseCase(
     private var session: Session? = null
     private val pc1 = PeerConnection()
     private val pc2 = PeerConnection()
+    private lateinit var localStream: MediaStream
 
     suspend fun establishConnection(): Flow<Result<MessageItem, DataError.Remote>> {
         remoteDataSource.closeWebsocketSession()
@@ -106,7 +108,7 @@ class ConversationUseCase(
             }
     }
 
-    private fun configurePeerConnections(
+    private suspend fun configurePeerConnections(
         scope: CoroutineScope,
         onRemoteAudioTrack: (AudioStreamTrack) -> Unit,
     ) {
@@ -114,6 +116,9 @@ class ConversationUseCase(
         val pc2IceCandidates = mutableListOf<IceCandidate>()
 
         pc1.apply {
+            localStream = MediaDevices.getUserMedia(video = false, audio = true)
+            localStream.tracks.forEach { pc1.addTrack(it) }
+
             onIceCandidate.onEach { iceCandidate ->
                 Napier.d(tag = TAG2) { "onIceCandidate (PC1): $iceCandidate" }
                 if (pc2.signalingState == SignalingState.HaveRemoteOffer) {

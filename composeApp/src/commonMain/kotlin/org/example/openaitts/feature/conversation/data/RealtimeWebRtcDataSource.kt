@@ -85,6 +85,9 @@ class RealtimeWebRtcDataSource(
         }
     }
 
+    /**
+     * Because our default http client has default content as Json, we need to create this one for SDP
+     */
     private fun createHttpClient(engine: HttpClientEngine): HttpClient {
         return HttpClient(engine) {
             install(
