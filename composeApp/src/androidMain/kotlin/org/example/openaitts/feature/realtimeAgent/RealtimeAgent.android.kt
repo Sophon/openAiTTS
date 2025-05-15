@@ -23,11 +23,12 @@ import org.example.openaitts.core.PlatformContext
 actual class RealtimeAgent actual constructor(
     callbacks: RealtimeAgentCallbacks,
     val apiKey: String,
-    val platformContext: PlatformContext,
 ) {
     private val client = mutableStateOf<RTVIClient?>(null)
     val state = mutableStateOf<TransportState>(TransportState.Disconnected)
     val errors = mutableStateListOf<Error>()
+
+    actual val platformContext = PlatformContext
 
     //TODO: these should probably be in the ViewModel; use them in the callbacks
     actual val isBotReady = mutableStateOf(false)

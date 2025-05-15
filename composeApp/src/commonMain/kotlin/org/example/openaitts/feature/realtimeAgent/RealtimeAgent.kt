@@ -7,8 +7,9 @@ import org.example.openaitts.core.PlatformContext
 expect class RealtimeAgent(
     callbacks: RealtimeAgentCallbacks,
     apiKey: String,
-    platformContext: PlatformContext,
 ) {
+    val platformContext: PlatformContext
+
     val isBotReady: MutableState<Boolean>
     val isBotTalking: MutableState<Boolean>
     val isUserTalking: MutableState<Boolean>
