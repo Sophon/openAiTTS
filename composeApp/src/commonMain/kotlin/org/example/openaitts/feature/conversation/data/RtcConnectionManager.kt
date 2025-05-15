@@ -48,6 +48,14 @@ class RtcConnectionManager(
         signal()
     }
 
+    fun closeConnection() {
+        pc1.close()
+        pc2.close()
+        pc1IceCandidates.clear()
+        pc2IceCandidates.clear()
+        localStream.release()
+    }
+
     private suspend fun getSession() {
         remoteDataSource.getSession(RequestSessionDto(model = MODEL_REALTIME))
             .onSuccess { session ->
