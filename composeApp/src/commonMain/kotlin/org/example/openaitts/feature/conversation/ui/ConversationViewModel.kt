@@ -118,7 +118,7 @@ class ConversationViewModel(
     }
 
     private suspend fun connect() {
-        conversationUseCase.establishRTCConnection(viewModelScope)
+        conversationUseCase.establishRtcConnection(viewModelScope)
 
         conversationUseCase
             .establishWebSocketConnection()
