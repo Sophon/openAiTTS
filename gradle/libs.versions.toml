@@ -26,6 +26,7 @@ napier = "2.6.1"
 record = "0.4.0"
 moko = "0.19.1"
 webrtc = "0.125.9"
+pipecatClient = "0.3.3"
 
 
 [libraries]
@@ -85,6 +86,9 @@ record = { module = "dev.theolm.record:record-core", version.ref = "record" }
 moko-permissions = { module = "dev.icerock.moko:permissions", version.ref = "moko" }
 moko-permissions-compose = { module = "dev.icerock.moko:permissions-compose", version.ref = "moko"}
 moko-permissions-microphone = { module = "dev.icerock.moko:permissions-microphone", version.ref = "moko"}
+
+# OpenAI client
+openai-client-android = { module = "ai.pipecat:openai-realtime-webrtc-transport", version.ref = "pipecatClient" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
