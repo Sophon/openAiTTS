@@ -44,7 +44,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.example.openaitts.feature.conversation.domain.models.Role
+import org.example.openaitts.feature.conversation.ui.components.ConnectionButton
 import org.example.openaitts.feature.conversation.ui.components.RecordButton
+import org.example.openaitts.feature.conversation.ui.components.ToggleMicButton
 import org.example.openaitts.feature.conversation.ui.components.VoiceSelectorDialog
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -138,18 +140,17 @@ private fun Content(
         MessagesField(
             messages = state.messages,
             modifier = Modifier
-                .fillMaxHeight(.85f)
+                .fillMaxHeight(.75f)
                 .border(1.dp, Color.Red),
         )
 
         Inputs(
-            text = state.query,
-            onTextChange = vm::onQueryChange,
-            isSendEnabled = state.isSendEnabled,
-            onSend = vm::sendTextMessage,
-            recordingStatus = state.recordingStatus,
-            onStartRecording = vm::startRecording,
-            onStopRecording = vm::stopRecording,
+            isMicEnabled = state.agentState.isMicEnabled,
+            isConnected = state.agentState.isAgentReady,
+            onConnect = vm::onConnect,
+            onDisconnect = vm::onDisconnect,
+            isUserTalking = state.agentState.isUserTalking,
+            onToggleMic = vm::onToggleMic,
             modifier = Modifier.border(1.dp, Color.Yellow),
         )
     }
@@ -209,47 +210,61 @@ private fun ChatBubble(
 
 @Composable
 private fun Inputs(
-    text: String,
-    onTextChange: (String) -> Unit,
-    isSendEnabled: Boolean,
-    onSend: () -> Unit,
-    recordingStatus: ConversationViewState.RecordingStatus,
-    onStartRecording: () -> Unit,
-    onStopRecording: () -> Unit,
+    isMicEnabled: Boolean,
+    isConnected: Boolean,
+    onConnect: () -> Unit,
+    onDisconnect: () -> Unit,
+    isUserTalking: Boolean,
+    onToggleMic: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
+            .fillMaxHeight()
             .fillMaxWidth()
             .padding(8.dp)
             .border(1.dp, Color.Blue)
     ) {
-        TextField(
-            value = text,
-            onValueChange = onTextChange,
-            textStyle = MaterialTheme.typography.bodyMedium,
-            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { onSend() }),
-            trailingIcon = {
-                Button(
-                    onClick = onSend,
-                    enabled = isSendEnabled,
-                    modifier = Modifier.padding(horizontal = 4.dp)
-                ) {
-                    Icon(Icons.AutoMirrored.Default.Send, contentDescription = null)
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
+        ConnectionButton(
+            isConnected = isConnected,
+            onConnect = onConnect,
+            onDisconnect = onDisconnect,
         )
 
-        RecordButton(
-            recordingStatus = recordingStatus,
-            onStartRecording = onStartRecording,
-            onStopRecording = onStopRecording,
+        ToggleMicButton(
+            isMicEnabled = isMicEnabled,
+            onToggleMic = onToggleMic,
+            isUserTalking = isUserTalking,
         )
     }
+}
+
+@Composable
+private fun ChatInputField(
+    text: String,
+    onTextChange: (String) -> Unit,
+    isSendEnabled: Boolean,
+    onSend: () -> Unit,
+    modifier: Modifier,
+) {
+    TextField(
+        value = text,
+        onValueChange = onTextChange,
+        textStyle = MaterialTheme.typography.bodyMedium,
+        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { onSend() }),
+        trailingIcon = {
+            Button(
+                onClick = onSend,
+                enabled = isSendEnabled,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            ) {
+                Icon(Icons.AutoMirrored.Default.Send, contentDescription = null)
+            }
+        },
+        modifier = modifier
+            .fillMaxWidth()
+    )
 }
