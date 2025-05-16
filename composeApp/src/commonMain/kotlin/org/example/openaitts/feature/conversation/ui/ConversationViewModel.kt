@@ -124,7 +124,7 @@ class ConversationViewModel(
     }
 
     fun onConnect() {
-        agent.start(API_KEY)
+        agent.start(API_KEY, _state.value.selectedVoice)
     }
 
     fun onDisconnect() {

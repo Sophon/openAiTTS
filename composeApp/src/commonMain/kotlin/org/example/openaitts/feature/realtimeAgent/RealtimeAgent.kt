@@ -1,13 +1,14 @@
 package org.example.openaitts.feature.realtimeAgent
 
 import org.example.openaitts.core.PlatformContext
+import org.example.openaitts.feature.conversation.domain.models.Voice
 
 expect class RealtimeAgent(
     callbacks: RealtimeAgentCallbacks,
 ) {
     val platformContext: PlatformContext
 
-    fun start(apiKey: String)
+    fun start(apiKey: String, voice: Voice)
     fun stop()
     fun toggleMic(newValue: Boolean)
 }

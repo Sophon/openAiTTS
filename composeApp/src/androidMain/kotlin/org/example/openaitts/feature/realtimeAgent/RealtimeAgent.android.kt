@@ -4,6 +4,7 @@ import ai.pipecat.client.RTVIClient
 import ai.pipecat.client.RTVIClientOptions
 import ai.pipecat.client.RTVIClientParams
 import ai.pipecat.client.RTVIEventCallbacks
+import ai.pipecat.client.helper.LLMContextMessage
 import ai.pipecat.client.openai_realtime_webrtc.OpenAIRealtimeSessionConfig
 import ai.pipecat.client.openai_realtime_webrtc.OpenAIRealtimeWebRTCTransport
 import ai.pipecat.client.result.Future
@@ -19,6 +20,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import io.github.aakira.napier.Napier
 import org.example.openaitts.core.PlatformContext
+import org.example.openaitts.feature.conversation.domain.models.Voice
 
 actual class RealtimeAgent actual constructor(
     callbacks: RealtimeAgentCallbacks,
@@ -51,6 +53,18 @@ actual class RealtimeAgent actual constructor(
             callbacks.onAgentTranscriptionReceived(transcript = data.text)
         }
 
+        override fun onBotTranscript(text: String) {
+            super.onBotTranscript(text)
+
+            Napier.d(tag = TAG) { "Bot transcript: $text" }
+        }
+
+        override fun onBotLLMText(data: MsgServerToClient.Data.BotLLMTextData) {
+            super.onBotLLMText(data)
+
+            Napier.d(tag = TAG) { "Bot LLM text: ${data.text}" }
+        }
+
         override fun onUserTranscript(data: Transcript) {
             callbacks.onUserTranscriptionReceived(text = data.text, isFinal = data.final)
         }
@@ -74,12 +88,12 @@ actual class RealtimeAgent actual constructor(
         }
     }
 
-    actual fun start(apiKey: String) {
+    actual fun start(apiKey: String, voice: Voice) {
         if (client.value != null) return
 
         val client = RTVIClient(
             transport = OpenAIRealtimeWebRTCTransport.Factory(platformContext.get()),
-            options = createOptions(apiKey),
+            options = createOptions(apiKey, voice.name.lowercase()),
             callbacks = eventCallbacks,
         )
 
@@ -105,26 +119,18 @@ actual class RealtimeAgent actual constructor(
         client.value?.enableMic(isEnabled)?.displayErrors()
     }
 
-    private fun createOptions(apiKey: String): RTVIClientOptions {
+    private fun createOptions(apiKey: String, voice: String): RTVIClientOptions {
         return RTVIClientOptions(
             params = RTVIClientParams(
                 baseUrl = null,
                 config = OpenAIRealtimeWebRTCTransport.buildConfig(
                     apiKey = apiKey,
-                    /*initialMessages = listOf(
+                    initialMessages = listOf(
                         LLMContextMessage(
                             role = "user",
-                            content = "Please name an interesting landmark."
+                            content = "Tell me your name"
                         ),
-                        LLMContextMessage(
-                            role = "assistant",
-                            content = "Elizabeth tower."
-                        ),
-                        LLMContextMessage(
-                            role = "user",
-                            content = "How tall is it?"
-                        )
-                    ),*/
+                    ),
                     initialConfig = OpenAIRealtimeSessionConfig(
                         turnDetection = Value.Object(
                             "type" to Value.Str("semantic_vad")
@@ -136,7 +142,7 @@ actual class RealtimeAgent actual constructor(
                             "model" to Value.Str("whisper-1")
                         ),
                         modalities = listOf("audio", "text"),
-                        voice = "echo",
+                        voice = voice,
                     )
                 )
             )

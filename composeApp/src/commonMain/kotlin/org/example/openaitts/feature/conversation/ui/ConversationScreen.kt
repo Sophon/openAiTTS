@@ -60,6 +60,7 @@ fun ConversationScreen(
         topBar = {
             TopBar(
                 onClick = vm::toggleVoiceSelectorDialogVisibility,
+                isVoiceChangeEnabled = state.isVoiceChangeEnabled,
                 selectedVoiceInitials = state.selectedVoiceInitials,
             )
         },
@@ -91,6 +92,7 @@ fun ConversationScreen(
 @Composable
 private fun TopBar(
     onClick: () -> Unit,
+    isVoiceChangeEnabled: Boolean,
     selectedVoiceInitials: String,
     modifier: Modifier = Modifier,
 ) {
@@ -102,19 +104,21 @@ private fun TopBar(
             )
         },
         actions = {
-            IconButton(onClick = onClick) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(MaterialTheme.colorScheme.onPrimary, shape = CircleShape)
-                ) {
-                    Text(
-                        text = selectedVoiceInitials,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        textAlign = TextAlign.Center,
-                    )
+            if (isVoiceChangeEnabled) {
+                IconButton(onClick = onClick) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .background(MaterialTheme.colorScheme.onPrimary, shape = CircleShape)
+                    ) {
+                        Text(
+                            text = selectedVoiceInitials,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
             }
         },

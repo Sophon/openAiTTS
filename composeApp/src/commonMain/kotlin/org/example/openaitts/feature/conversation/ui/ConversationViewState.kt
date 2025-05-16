@@ -20,6 +20,7 @@ data class ConversationViewState(
 ) {
     val isSendEnabled: Boolean get() = query.isNotBlank()
     val selectedVoiceInitials: String get() = selectedVoice.name.take(3)
+    val isVoiceChangeEnabled: Boolean get() = agentState.isAgentReady.not()
 
     enum class RecordingStatus {
         DISABLED,
