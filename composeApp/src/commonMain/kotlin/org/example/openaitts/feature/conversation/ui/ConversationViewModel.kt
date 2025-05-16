@@ -45,9 +45,12 @@ class ConversationViewModel(
     )
 
     init {
-        viewModelScope.launch {
-            connect()
-        }
+//        viewModelScope.launch {
+//            connect()
+//        }
+
+        agent = RealtimeAgent(callbacks())
+        agent.start(API_KEY)
     }
 
     fun sendTextMessage() {

@@ -1,19 +1,14 @@
 package org.example.openaitts.feature.conversation.domain.usecases
 
-import com.shepeliev.webrtckmp.IceCandidate
-import com.shepeliev.webrtckmp.MediaStream
-import com.shepeliev.webrtckmp.PeerConnection
 import io.github.aakira.napier.Napier
 import io.ktor.websocket.Frame
 import io.ktor.websocket.readText
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import org.example.openaitts.core.domain.DataError
 import org.example.openaitts.core.domain.Result
 import org.example.openaitts.feature.audio.AudioPlayer
-import org.example.openaitts.feature.conversation.data.RtcConnectionManager
 import org.example.openaitts.feature.conversation.data.RealtimeWebSocketDataSource
 import org.example.openaitts.feature.conversation.data.dto.RequestUpdateSessionDto
 import org.example.openaitts.feature.conversation.data.dto.ResponseDto
@@ -26,18 +21,18 @@ import org.example.openaitts.feature.conversation.domain.utils.decode
 
 class ConversationUseCase(
     private val remoteDataSource: RealtimeWebSocketDataSource,
-    private val rtcConnectionManager: RtcConnectionManager,
+//    private val rtcConnectionManager: RtcConnectionManager,
     private val audioPlayer: AudioPlayer,
 ) {
     private val json = Json { ignoreUnknownKeys = true }
     private var playbackStarted = false
 
-    private var session: Session? = null
-    private val pc1 = PeerConnection()
-    private val pc2 = PeerConnection()
-    private lateinit var localStream: MediaStream
-    private val pc1IceCandidates = mutableListOf<IceCandidate>()
-    private val pc2IceCandidates = mutableListOf<IceCandidate>()
+//    private var session: Session? = null
+//    private val pc1 = PeerConnection()
+//    private val pc2 = PeerConnection()
+//    private lateinit var localStream: MediaStream
+//    private val pc1IceCandidates = mutableListOf<IceCandidate>()
+//    private val pc2IceCandidates = mutableListOf<IceCandidate>()
 
     suspend fun establishWebSocketConnection(): Flow<Result<MessageItem, DataError.Remote>> {
         remoteDataSource.closeWebsocketSession()
@@ -65,9 +60,9 @@ class ConversationUseCase(
         return flow
     }
 
-    suspend fun establishRtcConnection(scope: CoroutineScope) {
-        rtcConnectionManager.establishRTCConnection(scope)
-    }
+//    suspend fun establishRtcConnection(scope: CoroutineScope) {
+//        rtcConnectionManager.establishRTCConnection(scope)
+//    }
 
     //returning null means we're not handling it
     private fun processText(textFrame: Frame.Text): ResponseDto? {

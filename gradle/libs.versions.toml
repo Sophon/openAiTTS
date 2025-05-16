@@ -25,7 +25,7 @@ buildkonfig = "0.17.0"
 napier = "2.6.1"
 record = "0.4.0"
 moko = "0.19.1"
-webrtc = "0.125.9"
+#webrtc = "0.125.9"
 pipecatClient = "0.3.3"
 
 
@@ -50,8 +50,8 @@ ktor-android = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-ios = { module = "io.ktor:ktor-client-ios", version.ref = "ktor" }
 ktor-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 
-# WebRTC
-webrtc = { module = "com.shepeliev:webrtc-kmp", version.ref = "webrtc" }
+## WebRTC
+#webrtc = { module = "com.shepeliev:webrtc-kmp", version.ref = "webrtc" }
 
 # Other Libraries
 kotlin-date-time = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlin-date-time" }

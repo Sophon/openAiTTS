@@ -3,8 +3,6 @@ package org.example.openaitts
 import io.ktor.client.HttpClient
 import org.example.openaitts.core.network.HttpClientFactory
 import org.example.openaitts.feature.audio.AudioRecorder
-import org.example.openaitts.feature.conversation.data.RtcConnectionManager
-import org.example.openaitts.feature.conversation.data.RealtimeWebRtcDataSource
 import org.example.openaitts.feature.conversation.data.RealtimeWebSocketDataSource
 import org.example.openaitts.feature.conversation.domain.usecases.AudioPlaybackUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.ConversationUseCase
@@ -48,10 +46,10 @@ val sharedModule = module {
         ConversationViewModel(get(), get(), get(), get(), get(), get(), get())
     }
 
-    singleOf(::RtcConnectionManager)
+//    singleOf(::RtcConnectionManager)
 
     singleOf(::RealtimeWebSocketDataSource)
-    singleOf(::RealtimeWebRtcDataSource)
+//    singleOf(::RealtimeWebRtcDataSource)
     singleOf(::ConversationUseCase)
     singleOf(::SendConversationMessageUseCase)
     singleOf(::UpdateVoiceUseCase)

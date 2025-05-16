@@ -58,7 +58,7 @@ kotlin {
             implementation(libs.bundles.ktor)
             implementation(libs.ktor.logging)
 
-            implementation(libs.webrtc)
+//            implementation(libs.webrtc)
 
             api(libs.koin.core)
             implementation(libs.koin.compose)
