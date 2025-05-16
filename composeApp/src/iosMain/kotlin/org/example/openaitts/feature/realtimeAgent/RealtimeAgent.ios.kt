@@ -4,11 +4,10 @@ import org.example.openaitts.core.PlatformContext
 
 actual class RealtimeAgent actual constructor(
     callbacks: RealtimeAgentCallbacks,
-    apiKey: String,
 ) {
     actual val platformContext = PlatformContext
 
-    actual fun start() {
+    actual fun start(apiKey: String) {
         TODO("not implemented")
     }
 

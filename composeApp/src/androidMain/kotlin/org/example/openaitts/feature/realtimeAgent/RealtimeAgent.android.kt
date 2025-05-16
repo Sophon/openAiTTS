@@ -10,11 +10,11 @@ import ai.pipecat.client.result.Future
 import ai.pipecat.client.result.RTVIError
 import ai.pipecat.client.transport.MsgServerToClient
 import ai.pipecat.client.types.ServiceConfig
+import ai.pipecat.client.types.Tracks
 import ai.pipecat.client.types.Transcript
 import ai.pipecat.client.types.TransportState
 import ai.pipecat.client.types.Value
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import io.github.aakira.napier.Napier
@@ -22,57 +22,62 @@ import org.example.openaitts.core.PlatformContext
 
 actual class RealtimeAgent actual constructor(
     callbacks: RealtimeAgentCallbacks,
-    val apiKey: String,
 ) {
     private val client = mutableStateOf<RTVIClient?>(null)
-    val state = mutableStateOf<TransportState>(TransportState.Disconnected)
+    val state = mutableStateOf(TransportState.Disconnected)
     val errors = mutableStateListOf<Error>()
+    val tracks = mutableStateOf<Tracks?>(null) //TODO: investigate
 
     actual val platformContext = PlatformContext
-
-    //TODO: these should probably be in the ViewModel; use them in the callbacks
-    actual val isBotReady = mutableStateOf(false)
-    actual val isBotTalking = mutableStateOf(false)
-    actual val isUserTalking = mutableStateOf(false)
-    actual val botAudioLevel = mutableFloatStateOf(0f)
-    actual val userAudioLevel = mutableFloatStateOf(0f)
-    actual val isMicEnabled = mutableStateOf(false)
 
     private val eventCallbacks = object : RTVIEventCallbacks() {
         override fun onBackendError(message: String) = callbacks.onBackendError(message)
 
         override fun onConnected() = callbacks.onConnect()
 
-        override fun onDisconnected() = callbacks.onDisconnect()
+        override fun onDisconnected() {
+            callbacks.onDisconnect()
+
+            client.value?.release()
+            client.value = null
+            state.value = TransportState.Disconnected
+            tracks.value = null
+        }
 
         override fun onBotReady(version: String, config: List<ServiceConfig>) =
-            callbacks.onBotReady()
+            callbacks.onAgentReady()
 
         override fun onBotTTSText(data: MsgServerToClient.Data.BotTTSTextData) =
-            callbacks.onBotTranscriptionReceived(transcript = data.text)
+            callbacks.onAgentTranscriptionReceived(transcript = data.text)
 
         override fun onUserTranscript(data: Transcript) =
             callbacks.onUserTranscriptionReceived(text = data.text, isFinal = data.final)
 
-        override fun onBotStartedSpeaking() = callbacks.onBotStartedSpeaking()
+        override fun onBotStartedSpeaking() = callbacks.onAgentTalking()
 
-        override fun onBotStoppedSpeaking() = callbacks.onBotStoppedSpeaking()
+        override fun onBotStoppedSpeaking() = callbacks.onAgentTalkingDone()
 
-        override fun onUserStartedSpeaking() = callbacks.onUserStartedSpeaking()
+        override fun onUserStartedSpeaking() = callbacks.onUserTalking()
 
-        override fun onUserStoppedSpeaking() = callbacks.onUserStoppedSpeaking()
+        override fun onUserStoppedSpeaking() = callbacks.onUserTalkingDone()
+
 
         override fun onTransportStateChanged(state: TransportState) {
+            Napier.d(tag = TAG) { "transport state changed: $state" }
             this@RealtimeAgent.state.value = state
+        }
+
+        override fun onTracksUpdated(tracks: Tracks) {
+            this@RealtimeAgent.tracks.value = tracks
         }
     }
 
-    actual fun start() {
+    actual fun start(apiKey: String) {
         if (client.value != null) return
 
         val client = RTVIClient(
             transport = OpenAIRealtimeWebRTCTransport.Factory(platformContext.get()),
-            options = createOptions(),
+            options = createOptions(apiKey),
             callbacks = eventCallbacks,
         )
 
@@ -98,7 +103,7 @@ actual class RealtimeAgent actual constructor(
         client.value?.enableMic(isEnabled)?.displayErrors()
     }
 
-    private fun createOptions(): RTVIClientOptions {
+    private fun createOptions(apiKey: String): RTVIClientOptions {
         return RTVIClientOptions(
             params = RTVIClientParams(
                 baseUrl = null,

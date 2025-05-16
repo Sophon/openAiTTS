@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.example.openaitts.BuildKonfig.API_KEY
 import org.example.openaitts.core.domain.Result
 import org.example.openaitts.feature.conversation.domain.models.MessageItem
 import org.example.openaitts.feature.conversation.domain.models.Role
@@ -20,6 +21,8 @@ import org.example.openaitts.feature.conversation.domain.usecases.RecordAudioUse
 import org.example.openaitts.feature.conversation.domain.usecases.SendConversationMessageUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.StopAudioRecordingUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.UpdateVoiceUseCase
+import org.example.openaitts.feature.realtimeAgent.RealtimeAgent
+import org.example.openaitts.feature.realtimeAgent.RealtimeAgentCallbacks
 import org.example.openaitts.feature.transcription.TranscribeAudioMessageUseCase
 
 class ConversationViewModel(
@@ -43,6 +46,7 @@ class ConversationViewModel(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = ConversationViewState(),
     )
+    private val agent: RealtimeAgent
 
     init {
 //        viewModelScope.launch {
@@ -121,7 +125,7 @@ class ConversationViewModel(
     }
 
     private suspend fun connect() {
-        conversationUseCase.establishRtcConnection(viewModelScope)
+//        conversationUseCase.establishRtcConnection(viewModelScope)
 
         conversationUseCase
             .establishWebSocketConnection()
@@ -185,6 +189,75 @@ class ConversationViewModel(
             }
         }
     }
+
+    private fun callbacks(): RealtimeAgentCallbacks {
+        return object : RealtimeAgentCallbacks {
+            override fun onConnect() {
+                Napier.d(tag = AGENT_TAG) { "Agent: connected" }
+                _state.update { state ->
+                    state.copy(agentState = state.agentState.copy(isAgentReady = true))
+                }
+            }
+
+            override fun onDisconnect() {
+                Napier.d(tag = AGENT_TAG) { "Agent: disconnected" }
+                _state.update { state ->
+                    state.copy(agentState = AgentState())
+                }
+            }
+
+            override fun onBackendError(message: String) {
+                Napier.e(tag = AGENT_TAG) { "Agent: backend error $message" }
+                _state.update { it.copy(error = message) }
+            }
+
+            override fun onAgentReady() {
+                Napier.d(tag = TAG) { "Agent: ready" }
+                _state.update { state ->
+                    state.copy(agentState = state.agentState.copy(isAgentReady = true))
+                }
+            }
+
+            override fun onAgentTranscriptionReceived(transcript: String) {
+                Napier.d(tag = TAG) { "Agent: transcription = $transcript" }
+                //TODO: add to state
+            }
+
+            override fun onUserTranscriptionReceived(text: String, isFinal: Boolean) {
+                Napier.d(tag = TAG) { "User: = $text" }
+                //TODO: add to state
+            }
+
+            override fun onAgentTalking() {
+                Napier.d(tag = TAG) { "Agent: talking" }
+                _state.update { state ->
+                    state.copy(agentState = state.agentState.copy(isAgentTalking = true))
+                }
+            }
+
+            override fun onAgentTalkingDone() {
+                Napier.d(tag = TAG) { "Agent: talking done" }
+                _state.update { state ->
+                    state.copy(agentState = state.agentState.copy(isAgentTalking = false))
+                }
+            }
+
+            override fun onUserTalking() {
+                Napier.d(tag = TAG) { "User: talking" }
+                _state.update { state ->
+                    state.copy(agentState = state.agentState.copy(isUserTalking = true))
+                }
+            }
+
+            override fun onUserTalkingDone() {
+                Napier.d(tag = TAG) { "User: talking done" }
+                _state.update { state ->
+                    state.copy(agentState = state.agentState.copy(isUserTalking = false))
+                }
+            }
+        }
+    }
 }
 
 private const val TAG = "ConversationViewModel"
+private const val AGENT_TAG = "RealtimeAgent"

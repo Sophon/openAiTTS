@@ -15,6 +15,8 @@ data class ConversationViewState(
     val selectedVoice: Voice = Voice.ALLOY,
     val isVoiceSelectorDialogVisible: Boolean = false,
     val recordingStatus: RecordingStatus = RecordingStatus.IDLE,
+
+    val agentState: AgentState = AgentState(),
 ) {
     val isSendEnabled: Boolean get() = query.isNotBlank()
     val selectedVoiceInitials: String get() = selectedVoice.name.take(3)
@@ -45,3 +47,12 @@ internal fun MessageItem.toUi(): UiMessage {
         isIncomplete = this.isIncomplete,
     )
 }
+
+data class AgentState(
+    val isAgentReady: Boolean = false,
+    val isAgentTalking: Boolean = false,
+    val isUserTalking: Boolean = false,
+    val agentAudioLevel: Float = 0f,
+    val userAudioLevel: Float = 0f,
+    val isMicEnabled: Boolean = false,
+)

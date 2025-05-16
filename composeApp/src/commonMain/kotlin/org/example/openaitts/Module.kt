@@ -11,6 +11,7 @@ import org.example.openaitts.feature.conversation.domain.usecases.SendConversati
 import org.example.openaitts.feature.conversation.domain.usecases.StopAudioRecordingUseCase
 import org.example.openaitts.feature.conversation.domain.usecases.UpdateVoiceUseCase
 import org.example.openaitts.feature.conversation.ui.ConversationViewModel
+import org.example.openaitts.feature.realtimeAgent.RealtimeAgent
 import org.example.openaitts.feature.transcription.TranscribeAudioMessageUseCase
 import org.example.openaitts.feature.transcription.TranscriptionRemoteDataSource
 import org.example.openaitts.feature.transcription.TranscriptionRemoteDataSourceImpl
@@ -65,5 +66,9 @@ val sharedModule = module {
     //region Transcription
     singleOf(::TranscriptionRemoteDataSourceImpl).bind<TranscriptionRemoteDataSource>()
     singleOf(::TranscribeAudioMessageUseCase)
+    //endregion
+
+    //region realtimeAgent
+    singleOf(::RealtimeAgent)
     //endregion
 }
