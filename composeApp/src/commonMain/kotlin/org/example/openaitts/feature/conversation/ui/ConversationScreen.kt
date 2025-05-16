@@ -24,6 +24,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -137,25 +138,34 @@ private fun Content(
     state: ConversationViewState,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier,
-    ) {
-        MessagesField(
-            messages = state.messages,
-            modifier = Modifier
-                .fillMaxHeight(.75f)
-                .border(1.dp, Color.Red),
-        )
+    Box(modifier = modifier) {
+        Column {
+            MessagesField(
+                messages = state.messages,
+                modifier = Modifier
+                    .fillMaxHeight(.75f)
+                    .border(1.dp, Color.Red),
+            )
 
-        Inputs(
-            isMicEnabled = state.agentState.isMicEnabled,
-            isConnected = state.agentState.isAgentReady,
-            onConnect = vm::onConnect,
-            onDisconnect = vm::onDisconnect,
-            isUserTalking = state.agentState.isUserTalking,
-            onToggleMic = vm::onToggleMic,
-            modifier = Modifier.border(1.dp, Color.Yellow),
-        )
+            Inputs(
+                isMicEnabled = state.agentState.isMicEnabled,
+                isConnected = state.agentState.isAgentReady,
+                onConnect = vm::onConnect,
+                onDisconnect = vm::onDisconnect,
+                isUserTalking = state.agentState.isUserTalking,
+                onToggleMic = vm::onToggleMic,
+                modifier = Modifier.border(1.dp, Color.Yellow),
+            )
+        }
+
+        if (state.isLoading) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                CircularProgressIndicator(modifier = Modifier.size(128.dp))
+            }
+        }
     }
 }
 

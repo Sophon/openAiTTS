@@ -124,6 +124,7 @@ class ConversationViewModel(
     }
 
     fun onConnect() {
+        _state.update { it.copy(isLoading = true) }
         agent.start(API_KEY, _state.value.selectedVoice)
     }
 
@@ -209,7 +210,10 @@ class ConversationViewModel(
             override fun onConnect() {
                 Napier.d(tag = AGENT_TAG) { "Agent: connected" }
                 _state.update { state ->
-                    state.copy(agentState = state.agentState.copy(isAgentReady = true))
+                    state.copy(
+                        isLoading = false,
+                        agentState = state.agentState.copy(isAgentReady = true)
+                    )
                 }
             }
 
