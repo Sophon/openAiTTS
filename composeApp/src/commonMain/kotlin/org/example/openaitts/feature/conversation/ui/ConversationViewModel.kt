@@ -209,12 +209,6 @@ class ConversationViewModel(
         return object : RealtimeAgentCallbacks {
             override fun onConnect() {
                 Napier.d(tag = AGENT_TAG) { "Agent: connected" }
-                _state.update { state ->
-                    state.copy(
-                        isLoading = false,
-                        agentState = state.agentState.copy(isAgentReady = true)
-                    )
-                }
             }
 
             override fun onDisconnect() {
@@ -232,7 +226,10 @@ class ConversationViewModel(
             override fun onAgentReady() {
                 Napier.d(tag = AGENT_TAG) { "Agent: ready" }
                 _state.update { state ->
-                    state.copy(agentState = state.agentState.copy(isAgentReady = true))
+                    state.copy(
+                        isLoading = false,
+                        agentState = state.agentState.copy(isAgentReady = true)
+                    )
                 }
             }
 
