@@ -46,8 +46,10 @@ actual class RealtimeAgent actual constructor(
             tracks.value = null
         }
 
-        override fun onBotReady(version: String, config: List<ServiceConfig>) =
+        override fun onBotReady(version: String, config: List<ServiceConfig>) {
             callbacks.onAgentReady()
+//            client.value?.action() //TODO: investigate how we can add transcription
+        }
 
         override fun onBotTTSText(data: MsgServerToClient.Data.BotTTSTextData) {
             callbacks.onAgentTranscriptionReceived(transcript = data.text)
@@ -71,7 +73,9 @@ actual class RealtimeAgent actual constructor(
 
         override fun onBotStartedSpeaking() = callbacks.onAgentTalking()
 
-        override fun onBotStoppedSpeaking() = callbacks.onAgentTalkingDone()
+        override fun onBotStoppedSpeaking() {
+            callbacks.onAgentTalkingDone()
+        }
 
         override fun onUserStartedSpeaking() = callbacks.onUserTalking()
 

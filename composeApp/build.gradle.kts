@@ -41,6 +41,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
             implementation(libs.openai.client.android)
+            implementation(libs.pipecat.client)
         }
 
         commonMain.dependencies {
