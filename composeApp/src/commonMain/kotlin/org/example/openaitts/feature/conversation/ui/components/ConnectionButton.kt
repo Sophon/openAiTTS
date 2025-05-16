@@ -16,11 +16,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import dev.icerock.moko.permissions.Permission
+import dev.icerock.moko.permissions.PermissionsController
+import dev.icerock.moko.permissions.compose.BindEffect
+import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
+import dev.icerock.moko.permissions.microphone.RECORD_AUDIO
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 internal fun ConnectionButton(
@@ -44,11 +53,24 @@ internal fun ConnectionButton(
         background = Color.Green.copy(.75f)
     }
 
+    //permission stuff
+    val coroutineScope = rememberCoroutineScope()
+    val permissionFactory = rememberPermissionsControllerFactory()
+    val permissionController = remember(permissionFactory) {
+        permissionFactory.createPermissionsController()
+    }
+
+    BindEffect(permissionController)
+
     Row(
         modifier
             .border(1.dp, MaterialTheme.colorScheme.onPrimary, shape)
             .clip(shape)
-            .clickable(onClick = clickAction)
+            .clickable(
+                onClick = {
+                    handleClick(coroutineScope, permissionController, clickAction)
+                }
+            )
             .background(background)
             .padding(vertical = 10.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -66,5 +88,19 @@ internal fun ConnectionButton(
             text = text,
             style = MaterialTheme.typography.bodyMedium
         )
+    }
+}
+
+private fun handleClick(
+    coroutineScope: CoroutineScope,
+    permissionController: PermissionsController,
+    action: () -> Unit
+) {
+    coroutineScope.launch {
+        if (permissionController.isPermissionGranted(Permission.RECORD_AUDIO)) {
+            action()
+        } else {
+            permissionController.providePermission(Permission.RECORD_AUDIO)
+        }
     }
 }
