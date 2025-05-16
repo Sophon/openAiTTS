@@ -54,7 +54,6 @@ class ConversationViewModel(
 //        }
 
         agent = RealtimeAgent(callbacks())
-        agent.start(API_KEY)
     }
 
     fun sendTextMessage() {
@@ -122,6 +121,20 @@ class ConversationViewModel(
                 }
             }
         }
+    }
+
+    fun onConnect() {
+        agent.start(API_KEY)
+    }
+
+    fun onDisconnect() {
+        agent.stop()
+    }
+
+    fun onToggleMic() {
+        val newState = _state.value.agentState.isMicEnabled.not()
+        agent.toggleMic(newState)
+        _state.update { it.copy(agentState = it.agentState.copy(isMicEnabled = newState)) }
     }
 
     private suspend fun connect() {
@@ -220,12 +233,18 @@ class ConversationViewModel(
 
             override fun onAgentTranscriptionReceived(transcript: String) {
                 Napier.d(tag = TAG) { "Agent: transcription = $transcript" }
-                //TODO: add to state
+
+                val newMessage = UiMessage(
+                    type = MessageItem.Type.MESSAGE,
+                    role = Role.ASSISTANT,
+                    text = transcript,
+                )
+                _state.update { it.copy(messages = it.messages + newMessage) }
             }
 
             override fun onUserTranscriptionReceived(text: String, isFinal: Boolean) {
                 Napier.d(tag = TAG) { "User: = $text" }
-                //TODO: add to state
+                addUserMessage(text = text)
             }
 
             override fun onAgentTalking() {
