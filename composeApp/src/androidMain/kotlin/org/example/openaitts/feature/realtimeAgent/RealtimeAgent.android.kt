@@ -47,11 +47,13 @@ actual class RealtimeAgent actual constructor(
         override fun onBotReady(version: String, config: List<ServiceConfig>) =
             callbacks.onAgentReady()
 
-        override fun onBotTTSText(data: MsgServerToClient.Data.BotTTSTextData) =
+        override fun onBotTTSText(data: MsgServerToClient.Data.BotTTSTextData) {
             callbacks.onAgentTranscriptionReceived(transcript = data.text)
+        }
 
-        override fun onUserTranscript(data: Transcript) =
+        override fun onUserTranscript(data: Transcript) {
             callbacks.onUserTranscriptionReceived(text = data.text, isFinal = data.final)
+        }
 
         override fun onBotStartedSpeaking() = callbacks.onAgentTalking()
 
@@ -132,7 +134,9 @@ actual class RealtimeAgent actual constructor(
                         ),
                         inputAudioTranscription = Value.Object(
                             "model" to Value.Str("whisper-1")
-                        )
+                        ),
+                        modalities = listOf("audio", "text"),
+                        voice = "echo",
                     )
                 )
             )

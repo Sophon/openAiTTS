@@ -25,6 +25,7 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun ToggleMicButton(
+    isConnected: Boolean,
     isMicEnabled: Boolean,
     onToggleMic: () -> Unit,
     isUserTalking: Boolean,
@@ -43,12 +44,11 @@ fun ToggleMicButton(
         )
 
         val background by animateColorAsState(
-            if (isMicEnabled.not()) {
-                Color.Red
-            } else if (isUserTalking) {
-                Color.Black
-            } else {
-                Color.Green.copy(.75f)
+            when {
+                isConnected.not() -> Color.Gray
+                isMicEnabled.not() -> Color.Red
+                isUserTalking -> Color.DarkGray
+                else -> Color.Green.copy(.75f)
             }
         )
 
@@ -59,7 +59,7 @@ fun ToggleMicButton(
                 .border(1.dp, Color.Gray, CircleShape)
                 .clip(CircleShape)
                 .background(background)
-                .clickable(onClick = onToggleMic)
+                .clickable(enabled = isConnected, onClick = onToggleMic)
                 .padding(36.dp),
             contentAlignment = Alignment.Center,
         ) {
@@ -74,9 +74,9 @@ fun ToggleMicButton(
                 ),
                 tint = Color.White,
                 contentDescription = if (isMicEnabled) {
-                    "Mute microphone"
+                    "Mute mic"
                 } else {
-                    "Unmute microphone"
+                    "Unmute mic"
                 },
             )
         }

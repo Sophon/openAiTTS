@@ -135,6 +135,7 @@ class ConversationViewModel(
         val newState = _state.value.agentState.isMicEnabled.not()
         agent.toggleMic(newState)
         _state.update { it.copy(agentState = it.agentState.copy(isMicEnabled = newState)) }
+        Napier.d(tag = AGENT_TAG) { "new mic value = $newState; state is ${_state.value.agentState.isMicEnabled}" }
     }
 
     private suspend fun connect() {
@@ -225,14 +226,14 @@ class ConversationViewModel(
             }
 
             override fun onAgentReady() {
-                Napier.d(tag = TAG) { "Agent: ready" }
+                Napier.d(tag = AGENT_TAG) { "Agent: ready" }
                 _state.update { state ->
                     state.copy(agentState = state.agentState.copy(isAgentReady = true))
                 }
             }
 
             override fun onAgentTranscriptionReceived(transcript: String) {
-                Napier.d(tag = TAG) { "Agent: transcription = $transcript" }
+                Napier.d(tag = AGENT_TAG) { "Agent: transcription = $transcript" }
 
                 val newMessage = UiMessage(
                     type = MessageItem.Type.MESSAGE,
@@ -243,33 +244,33 @@ class ConversationViewModel(
             }
 
             override fun onUserTranscriptionReceived(text: String, isFinal: Boolean) {
-                Napier.d(tag = TAG) { "User: = $text" }
+                Napier.d(tag = AGENT_TAG) { "User: = $text" }
                 addUserMessage(text = text)
             }
 
             override fun onAgentTalking() {
-                Napier.d(tag = TAG) { "Agent: talking" }
+                Napier.d(tag = AGENT_TAG) { "Agent: talking" }
                 _state.update { state ->
                     state.copy(agentState = state.agentState.copy(isAgentTalking = true))
                 }
             }
 
             override fun onAgentTalkingDone() {
-                Napier.d(tag = TAG) { "Agent: talking done" }
+                Napier.d(tag = AGENT_TAG) { "Agent: talking done" }
                 _state.update { state ->
                     state.copy(agentState = state.agentState.copy(isAgentTalking = false))
                 }
             }
 
             override fun onUserTalking() {
-                Napier.d(tag = TAG) { "User: talking" }
+                Napier.d(tag = AGENT_TAG) { "User: talking" }
                 _state.update { state ->
                     state.copy(agentState = state.agentState.copy(isUserTalking = true))
                 }
             }
 
             override fun onUserTalkingDone() {
-                Napier.d(tag = TAG) { "User: talking done" }
+                Napier.d(tag = AGENT_TAG) { "User: talking done" }
                 _state.update { state ->
                     state.copy(agentState = state.agentState.copy(isUserTalking = false))
                 }

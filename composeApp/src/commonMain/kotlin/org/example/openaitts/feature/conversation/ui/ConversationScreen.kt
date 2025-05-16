@@ -45,7 +45,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.example.openaitts.feature.conversation.domain.models.Role
 import org.example.openaitts.feature.conversation.ui.components.ConnectionButton
-import org.example.openaitts.feature.conversation.ui.components.RecordButton
 import org.example.openaitts.feature.conversation.ui.components.ToggleMicButton
 import org.example.openaitts.feature.conversation.ui.components.VoiceSelectorDialog
 import org.koin.compose.viewmodel.koinViewModel
@@ -234,6 +233,7 @@ private fun Inputs(
         )
 
         ToggleMicButton(
+            isConnected = isConnected,
             isMicEnabled = isMicEnabled,
             onToggleMic = onToggleMic,
             isUserTalking = isUserTalking,

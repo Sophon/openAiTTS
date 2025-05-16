@@ -54,5 +54,5 @@ data class AgentState(
     val isUserTalking: Boolean = false,
     val agentAudioLevel: Float = 0f,
     val userAudioLevel: Float = 0f,
-    val isMicEnabled: Boolean = false,
+    val isMicEnabled: Boolean = true,
 )
