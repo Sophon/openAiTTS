@@ -1,5 +1,6 @@
 package org.example.openaitts.feature.realtimeAgent.data
 
+import android.content.Context
 import android.util.Log
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
@@ -12,8 +13,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
-import org.example.openaitts.core.PlatformContext
-import org.example.openaitts.feature.conversation.domain.models.Voice
 import org.example.openaitts.feature.realtimeAgent.domain.OpenAiEvent
 import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
@@ -33,9 +32,9 @@ import javax.net.ssl.HttpsURLConnection
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-actual class WebRTCClient actual constructor(
+internal class WebRTCClient (
     onIncomingEvent: (OpenAiEvent) -> Unit,
-    platformContext: PlatformContext,
+    context: Context,
 ) {
     private val peerConnectionFactory: PeerConnectionFactory
     private val peerConnection: PeerConnection
@@ -46,7 +45,7 @@ actual class WebRTCClient actual constructor(
 
     init {
         val options = PeerConnectionFactory.Options()
-        val audioDeviceModule = JavaAudioDeviceModule.builder(platformContext.get())
+        val audioDeviceModule = JavaAudioDeviceModule.builder(context)
             .createAudioDeviceModule()
 
         peerConnectionFactory = PeerConnectionFactory.builder()
@@ -80,59 +79,27 @@ actual class WebRTCClient actual constructor(
         dataChannel = peerConnection.createDataChannel("oai-events", DataChannel.Init())
         dataChannel.registerObserver(
             object : DataChannel.Observer {
-                override fun onBufferedAmountChange(p0: Long) {
-                    TODO("Not yet implemented")
-                }
+                override fun onBufferedAmountChange(p0: Long) {}
 
-                override fun onStateChange() {
-                    TODO("Not yet implemented")
-                }
+                override fun onStateChange() {}
 
-                override fun onMessage(p0: DataChannel.Buffer?) {
-                    TODO("Not yet implemented")
+                override fun onMessage(buffer: DataChannel.Buffer) {
+                    try {
+                        val bytes = ByteArray(buffer.data.remaining())
+                        buffer.data.get(bytes)
+                        val message = String(bytes, Charsets.UTF_8)
+                        Napier.d(tag = TAG) { "Received message: $message" }
+                        val decoded = JSON_INSTANCE.decodeFromString<OpenAiEvent>(message)
+                        onIncomingEvent(decoded)
+                    } catch (e: Exception) {
+                        Napier.d(tag = TAG) { "Failed to parse incoming event: $e" }
+                    }
                 }
             }
         )
     }
 
-    actual fun start(apiKey: String, voice: Voice) {}
-
-    actual fun stop() {}
-
-    actual fun toggleMic(newValue: Boolean) {}
-
-    private fun createOffer(sdpObserver: SdpObserver) {
-        Napier.d(tag = TAG) { "creating offer" }
-
-        val constraints = MediaConstraints()
-        constraints.mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"))
-        constraints.mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false"))
-
-        peerConnection.createOffer(sdpObserver, constraints)
-    }
-
-    private suspend fun createOffer(): SessionDescription {
-        return suspendCancellableCoroutine { continuation ->
-            createOffer(
-                object : SdpObserver {
-                    override fun onCreateSuccess(sessionDescription: SessionDescription) {
-                        Napier.d(tag = TAG) { "Offer created successfully" }
-                        continuation.resume(sessionDescription)
-                    }
-
-                    override fun onCreateFailure(s: String) {
-                        Napier.d(tag = TAG) { "Failed to create offer $s" }
-                        continuation.resumeWithException(Exception("Create offer failed: $s"))
-                    }
-
-                    override fun onSetSuccess() {}
-                    override fun onSetFailure(s: String) {}
-                }
-            )
-        }
-    }
-
-    private suspend fun dispose() {
+    suspend fun dispose() {
         try {
             negotiateJob.get()?.cancelAndJoin()
             localAudioTrack.dispose()
@@ -145,13 +112,13 @@ actual class WebRTCClient actual constructor(
         }
     }
 
-    private fun setAudioTrackEnabled(enabled: Boolean) {
+    fun setAudioTrackEnabled(enabled: Boolean) {
         localAudioTrack.setEnabled(enabled)
     }
 
-    private fun isAudioTrackEnabled(): Boolean = localAudioTrack.enabled()
+    fun isAudioTrackEnabled(): Boolean = localAudioTrack.enabled()
 
-    private fun <T> sendDataMessage(serializer: KSerializer<T>, msg: T) {
+    fun <T> sendDataMessage(serializer: KSerializer<T>, msg: T) {
         val msgString = JSON_INSTANCE.encodeToString(serializer, msg)
 
         dataChannel.send(
@@ -162,49 +129,7 @@ actual class WebRTCClient actual constructor(
         )
     }
 
-    private suspend fun setLocalDescription(sessionDescription: SessionDescription) {
-        suspendCancellableCoroutine { continuation ->
-            peerConnection.setRemoteDescription(
-                object : SdpObserver {
-                    override fun onCreateSuccess(p0: SessionDescription?) {}
-                    override fun onCreateFailure(p0: String?) {}
-
-                    override fun onSetSuccess() {
-                        Napier.d(tag = TAG) { "Remote: description set successfully" }
-                        continuation.resume(Unit)
-                    }
-
-                    override fun onSetFailure(p0: String?) {
-                        Napier.e(tag = TAG) { "Remote: description set failed: $p0" }
-                    }
-                },
-                sessionDescription,
-            )
-        }
-    }
-
-    private suspend fun setRemoteDescription(sessionDescription: SessionDescription) {
-        suspendCancellableCoroutine { continuation ->
-            peerConnection.setRemoteDescription(
-                object : SdpObserver {
-                    override fun onCreateSuccess(sessionDescription: SessionDescription) {}
-                    override fun onCreateFailure(s: String) {}
-                    override fun onSetSuccess() {
-                        Napier.d(tag = TAG) { "Remote description set successfully" }
-                        continuation.resume(Unit)
-                    }
-
-                    override fun onSetFailure(s: String) {
-                        Napier.e(tag = TAG) { "Failed to set remote description: $s" }
-                        continuation.resumeWithException(Exception("Set remote description failed: $s"))
-                    }
-                },
-                sessionDescription
-            )
-        }
-    }
-
-    private suspend fun negotiateConnection(
+    suspend fun negotiateConnection(
         baseUrl: String,
         apiKey: String,
         model: String,
@@ -266,6 +191,79 @@ actual class WebRTCClient actual constructor(
         }
     }
 
+    private fun createOffer(sdpObserver: SdpObserver) {
+        Napier.d(tag = TAG) { "creating offer" }
+
+        val constraints = MediaConstraints()
+        constraints.mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"))
+        constraints.mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false"))
+
+        peerConnection.createOffer(sdpObserver, constraints)
+    }
+
+    private suspend fun createOffer(): SessionDescription {
+        return suspendCancellableCoroutine { continuation ->
+            createOffer(
+                object : SdpObserver {
+                    override fun onCreateSuccess(sessionDescription: SessionDescription) {
+                        Napier.d(tag = TAG) { "Offer created successfully" }
+                        continuation.resume(sessionDescription)
+                    }
+
+                    override fun onCreateFailure(s: String) {
+                        Napier.d(tag = TAG) { "Failed to create offer $s" }
+                        continuation.resumeWithException(Exception("Create offer failed: $s"))
+                    }
+
+                    override fun onSetSuccess() {}
+                    override fun onSetFailure(s: String) {}
+                }
+            )
+        }
+    }
+
+
+    private suspend fun setLocalDescription(sessionDescription: SessionDescription) {
+        suspendCancellableCoroutine { continuation ->
+            peerConnection.setRemoteDescription(
+                object : SdpObserver {
+                    override fun onCreateSuccess(p0: SessionDescription?) {}
+                    override fun onCreateFailure(p0: String?) {}
+
+                    override fun onSetSuccess() {
+                        Napier.d(tag = TAG) { "Remote: description set successfully" }
+                        continuation.resume(Unit)
+                    }
+
+                    override fun onSetFailure(p0: String?) {
+                        Napier.e(tag = TAG) { "Remote: description set failed: $p0" }
+                    }
+                },
+                sessionDescription,
+            )
+        }
+    }
+
+    private suspend fun setRemoteDescription(sessionDescription: SessionDescription) {
+        suspendCancellableCoroutine { continuation ->
+            peerConnection.setRemoteDescription(
+                object : SdpObserver {
+                    override fun onCreateSuccess(sessionDescription: SessionDescription) {}
+                    override fun onCreateFailure(s: String) {}
+                    override fun onSetSuccess() {
+                        Napier.d(tag = TAG) { "Remote description set successfully" }
+                        continuation.resume(Unit)
+                    }
+
+                    override fun onSetFailure(s: String) {
+                        Napier.e(tag = TAG) { "Failed to set remote description: $s" }
+                        continuation.resumeWithException(Exception("Set remote description failed: $s"))
+                    }
+                },
+                sessionDescription
+            )
+        }
+    }
 
     private object LoggingPeerConnectionObserver: PeerConnection.Observer {
         override fun onSignalingChange(p0: PeerConnection.SignalingState?) {
