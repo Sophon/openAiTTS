@@ -1,7 +1,11 @@
 package org.example.openaitts.feature.realtimeAgent.data
 
+import ai.pipecat.client.helper.LLMContextMessage
+import ai.pipecat.client.helper.LLMFunctionCall
 import ai.pipecat.client.helper.LLMFunctionCallResult
+import ai.pipecat.client.openai_realtime_webrtc.OpenAIRealtimeWebRTCTransport
 import ai.pipecat.client.openai_realtime_webrtc.OpenAIRealtimeWebRTCTransport.AudioDevices
+import ai.pipecat.client.openai_realtime_webrtc.OpenAIRealtimeWebRTCTransport.Companion
 import ai.pipecat.client.result.Future
 import ai.pipecat.client.result.RTVIError
 import ai.pipecat.client.result.resolvedPromiseErr
@@ -18,15 +22,18 @@ import ai.pipecat.client.types.Participant
 import ai.pipecat.client.types.ParticipantId
 import ai.pipecat.client.types.ParticipantTracks
 import ai.pipecat.client.types.Tracks
+import ai.pipecat.client.types.Transcript
 import ai.pipecat.client.types.TransportState
 import ai.pipecat.client.types.Value
 import ai.pipecat.client.types.getOptionsFor
 import ai.pipecat.client.types.getValueFor
 import android.content.Context
 import android.media.AudioManager
+import android.util.Log
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -43,7 +50,74 @@ class RtcTransport(
     private var state = TransportState.Disconnected
 
     private val eventHandler = { msg: OpenAiEvent ->
-        //TODO:
+        thread.runOnThread {
+            when (msg.type) {
+                "error" -> {
+                    if (msg.error != null) {
+                        transportContext.callbacks.onBackendError(msg.error.describe() ?: "<null>")
+                    }
+                }
+                "session.created" -> {
+                    onSessionCreated()
+                }
+                "input_audio_buffer.speech_started" -> {
+                    transportContext.callbacks.onUserStartedSpeaking()
+                }
+                "input_audio_buffer.speech_stopped" -> {
+                    transportContext.callbacks.onUserStoppedSpeaking()
+                }
+                "response.audio_transcript.delta" -> {
+                    if (msg.delta != null) {
+                        transportContext.callbacks.onBotTTSText(
+                            MsgServerToClient.Data.BotTTSTextData(
+                                msg.delta
+                            )
+                        )
+                    }
+                }
+                "conversation.item.input_audio_transcription.completed" -> {
+                    if (msg.transcript != null) {
+                        transportContext.callbacks.onUserTranscript(
+                            Transcript(
+                                text = msg.transcript,
+                                final = true
+                            )
+                        )
+                    }
+                }
+                "output_audio_buffer.started" -> {
+                    transportContext.callbacks.onBotStartedSpeaking()
+                }
+                "output_audio_buffer.cleared", "output_audio_buffer.stopped" -> {
+                    transportContext.callbacks.onBotStoppedSpeaking()
+                }
+                "response.function_call_arguments.done" -> {
+                    if (msg.name == null || msg.callId == null || msg.arguments == null) {
+                        Napier.d(tag = TAG) { "Ignoring function call response with null arguments" }
+                        return@runOnThread
+                    }
+
+                    val data = LLMFunctionCall(
+                        functionName = msg.name,
+                        toolCallId = msg.callId,
+                        args = Value.Str(msg.arguments)
+                    )
+
+                    transportContext.onMessage(
+                        MsgServerToClient(
+                            id = null,
+                            label = "rtvi-ai",
+                            type = "llm-function-call",
+                            data = JSON.encodeToJsonElement(data)
+                        )
+                    )
+                }
+
+                else -> {
+                    Napier.d(tag = TAG) { "Unhandled event of type: ${msg.type}" }
+                }
+            }
+        }
     }
 
     override fun initDevices(): Future<Unit, RTVIError> {
@@ -266,6 +340,41 @@ class RtcTransport(
                 )
             )
         )
+    }
+
+    private fun onSessionCreated() {
+        val options = transportContext.options.params.config.getOptionsFor(SERVICE_LLM)
+
+        val initialMessages =
+            (options?.getValueFor(OPTION_INITIAL_MESSAGES) as? Value.Array)?.value
+
+        val initialConfig = options?.getValueFor(OPTION_INITIAL_CONFIG)
+
+        if (initialConfig != null) {
+            sendConfigUpdate(initialConfig)
+        }
+
+        if (initialMessages != null) {
+            for (message in initialMessages.map { it.convertFromValue(LLMContextMessage.serializer()) }) {
+                sendConversationMessage(role = message.role, text = message.content)
+            }
+            requestResponseFromBot()
+        }
+    }
+
+    private fun sendConfigUpdate(config: Value) {
+        client?.sendDataMessage(
+            OpenAISessionUpdate.serializer(),
+            OpenAISessionUpdate.of(config)
+        )
+    }
+
+    private inline fun <reified E> E.convertToValue(serializer: KSerializer<E>): Value {
+        return JSON.decodeFromJsonElement<Value>(JSON.encodeToJsonElement(serializer, this))
+    }
+
+    private inline fun <reified E> Value.convertFromValue(serializer: KSerializer<E>): E {
+        return JSON.decodeFromJsonElement(serializer, JSON.encodeToJsonElement(Value.serializer(), this))
     }
 
     //region Not needed/supported
