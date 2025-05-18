@@ -5,7 +5,6 @@ import ai.pipecat.client.helper.LLMFunctionCall
 import ai.pipecat.client.helper.LLMFunctionCallResult
 import ai.pipecat.client.openai_realtime_webrtc.OpenAIRealtimeWebRTCTransport
 import ai.pipecat.client.openai_realtime_webrtc.OpenAIRealtimeWebRTCTransport.AudioDevices
-import ai.pipecat.client.openai_realtime_webrtc.OpenAIRealtimeWebRTCTransport.Companion
 import ai.pipecat.client.result.Future
 import ai.pipecat.client.result.RTVIError
 import ai.pipecat.client.result.resolvedPromiseErr
@@ -30,7 +29,6 @@ import ai.pipecat.client.types.getOptionsFor
 import ai.pipecat.client.types.getValueFor
 import android.content.Context
 import android.media.AudioManager
-import android.util.Log
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -69,20 +67,13 @@ class RtcTransport(
                 }
                 "response.audio_transcript.delta" -> {
                     if (msg.delta != null) {
-                        transportContext.callbacks.onBotTTSText(
-                            MsgServerToClient.Data.BotTTSTextData(
-                                msg.delta
-                            )
-                        )
+                        transportContext.callbacks.onBotTTSText(MsgServerToClient.Data.BotTTSTextData(msg.delta))
                     }
                 }
                 "conversation.item.input_audio_transcription.completed" -> {
                     if (msg.transcript != null) {
                         transportContext.callbacks.onUserTranscript(
-                            Transcript(
-                                text = msg.transcript,
-                                final = true
-                            )
+                            Transcript(text = msg.transcript, final = true)
                         )
                     }
                 }
@@ -113,7 +104,6 @@ class RtcTransport(
                         )
                     )
                 }
-
                 else -> {
                     Napier.d(tag = TAG) { "Unhandled event of type: ${msg.type}" }
                 }
