@@ -16,6 +16,7 @@ import ai.pipecat.client.transport.MsgClientToServer
 import ai.pipecat.client.transport.MsgServerToClient
 import ai.pipecat.client.transport.Transport
 import ai.pipecat.client.transport.TransportContext
+import ai.pipecat.client.transport.TransportFactory
 import ai.pipecat.client.types.MediaDeviceId
 import ai.pipecat.client.types.MediaDeviceInfo
 import ai.pipecat.client.types.Participant
@@ -408,6 +409,12 @@ class RtcTransport(
             name = null,
             local = true
         )
+    }
+
+    class Factory(private val androidContext: Context) : TransportFactory {
+        override fun createTransport(context: TransportContext): Transport {
+            return OpenAIRealtimeWebRTCTransport(context, androidContext)
+        }
     }
 }
 

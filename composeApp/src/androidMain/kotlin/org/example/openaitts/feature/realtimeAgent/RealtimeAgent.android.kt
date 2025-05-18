@@ -9,27 +9,31 @@ import ai.pipecat.client.openai_realtime_webrtc.OpenAIRealtimeSessionConfig
 import ai.pipecat.client.openai_realtime_webrtc.OpenAIRealtimeWebRTCTransport
 import ai.pipecat.client.result.Future
 import ai.pipecat.client.result.RTVIError
+import ai.pipecat.client.transport.AuthBundle
 import ai.pipecat.client.transport.MsgServerToClient
+import ai.pipecat.client.transport.TransportContext
 import ai.pipecat.client.types.ServiceConfig
 import ai.pipecat.client.types.Tracks
 import ai.pipecat.client.types.Transcript
 import ai.pipecat.client.types.TransportState
 import ai.pipecat.client.types.Value
+import ai.pipecat.client.utils.ThreadRef
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.CoroutineScope
 import org.example.openaitts.core.PlatformContext
 import org.example.openaitts.feature.conversation.domain.models.Voice
+import org.example.openaitts.feature.realtimeAgent.data.RtcTransport
 
 actual class RealtimeAgent actual constructor(
     callbacks: RealtimeAgentCallbacks,
 ) {
-    private val client = mutableStateOf<RTVIClient?>(null)
-    val state = mutableStateOf(TransportState.Disconnected)
+//    private val client = mutableStateOf<RTVIClient?>(null)
+//    val state = mutableStateOf(TransportState.Disconnected)
     val errors = mutableStateListOf<Error>()
-    val tracks = mutableStateOf<Tracks?>(null) //TODO: investigate
-
+    val tracks = mutableStateOf<Tracks?>(null)
     actual val platformContext = PlatformContext
 
     private val eventCallbacks = object : RTVIEventCallbacks() {
@@ -40,9 +44,9 @@ actual class RealtimeAgent actual constructor(
         override fun onDisconnected() {
             callbacks.onDisconnect()
 
-            client.value?.release()
-            client.value = null
-            state.value = TransportState.Disconnected
+//            client.value?.release()
+//            client.value = null
+//            state.value = TransportState.Disconnected
             tracks.value = null
         }
 
@@ -53,18 +57,6 @@ actual class RealtimeAgent actual constructor(
 
         override fun onBotTTSText(data: MsgServerToClient.Data.BotTTSTextData) {
             callbacks.onAgentTranscriptionReceived(transcript = data.text)
-        }
-
-        override fun onBotTranscript(text: String) {
-            super.onBotTranscript(text)
-
-            Napier.d(tag = TAG) { "Bot transcript: $text" }
-        }
-
-        override fun onBotLLMText(data: MsgServerToClient.Data.BotLLMTextData) {
-            super.onBotLLMText(data)
-
-            Napier.d(tag = TAG) { "Bot LLM text: ${data.text}" }
         }
 
         override fun onUserTranscript(data: Transcript) {
@@ -80,39 +72,55 @@ actual class RealtimeAgent actual constructor(
         override fun onUserStartedSpeaking() = callbacks.onUserTalking()
 
         override fun onUserStoppedSpeaking() = callbacks.onUserTalkingDone()
+    }
 
+    private var apiKey: String = ""
+    private var voice: Voice = Voice.ECHO
+    private val transportContext by lazy {
+        object : TransportContext {
+            override val options: RTVIClientOptions = createOptions(apiKey, voice.name.lowercase())
+            override val callbacks: RTVIEventCallbacks = eventCallbacks
+            override val thread = ThreadRef.forCurrent()
 
-        override fun onTransportStateChanged(state: TransportState) {
-            Napier.d(tag = TAG) { "transport state changed: $state" }
-            this@RealtimeAgent.state.value = state
+            override fun onMessage(msg: MsgServerToClient) {
+                Napier.d(tag = TAG) { "onMessage of $msg" }
+            }
         }
-
-        override fun onTracksUpdated(tracks: Tracks) {
-            this@RealtimeAgent.tracks.value = tracks
-        }
+    }
+    private val transport by lazy {
+        RtcTransport.Factory(platformContext.get()).createTransport(context = transportContext)
     }
 
     actual fun start(apiKey: String, voice: Voice) {
-        if (client.value != null) return
-
-        val client = RTVIClient(
-            transport = OpenAIRealtimeWebRTCTransport.Factory(platformContext.get()),
-            options = createOptions(apiKey, voice.name.lowercase()),
-            callbacks = eventCallbacks,
+        this.apiKey = apiKey
+        this.voice = voice
+        val authBundle = AuthBundle(
+            data = "",
         )
 
-        client
-            .connect()
-            .displayErrors()
-            .withErrorCallback {
-                eventCallbacks.onDisconnected()
-            }
+        transport.connect(authBundle)
 
-        this.client.value = client
+//        if (client.value != null) return
+//
+//        val client = RTVIClient(
+//            transport = OpenAIRealtimeWebRTCTransport.Factory(platformContext.get()),
+//            options = createOptions(apiKey, voice.name.lowercase()),
+//            callbacks = eventCallbacks,
+//        )
+//
+//        client
+//            .connect()
+//            .displayErrors()
+//            .withErrorCallback {
+//                eventCallbacks.onDisconnected()
+//            }
+//
+//        this.client.value = client
     }
 
     actual fun stop() {
-        client.value?.disconnect()?.displayErrors()
+//        client.value?.disconnect()?.displayErrors()
+        transport.disconnect()
     }
 
     actual fun toggleMic(newValue: Boolean) {
@@ -120,7 +128,8 @@ actual class RealtimeAgent actual constructor(
     }
 
     private fun enableMic(isEnabled: Boolean) {
-        client.value?.enableMic(isEnabled)?.displayErrors()
+//        client.value?.enableMic(isEnabled)?.displayErrors()
+        Napier.d(tag = TAG) { "toggling mic: $isEnabled" }
     }
 
     private fun createOptions(apiKey: String, voice: String): RTVIClientOptions {
