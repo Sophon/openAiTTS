@@ -214,9 +214,10 @@ internal class WebRTCClient (
 
     private fun createAudioSourceAndTrack(): Pair<AudioSource, AudioTrack> {
         Napier.d(tag = TAG) { "Audio track: creating and adding" }
-        val audioSource = peerConnectionFactory.createAudioSource(MediaConstraints())
+        val audioSource: AudioSource = peerConnectionFactory.createAudioSource(MediaConstraints())
         val localAudioTrack = peerConnectionFactory.createAudioTrack("mic", audioSource)
         localAudioTrack.setEnabled(true)
+        localAudioTrack.setVolume(999999.0)
 
         return Pair(audioSource, localAudioTrack)
     }

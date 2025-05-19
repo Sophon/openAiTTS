@@ -3,7 +3,6 @@ package org.example.openaitts.feature.realtimeAgent.data
 import ai.pipecat.client.helper.LLMContextMessage
 import ai.pipecat.client.helper.LLMFunctionCall
 import ai.pipecat.client.helper.LLMFunctionCallResult
-import ai.pipecat.client.openai_realtime_webrtc.OpenAIRealtimeWebRTCTransport
 import ai.pipecat.client.openai_realtime_webrtc.OpenAIRealtimeWebRTCTransport.AudioDevices
 import ai.pipecat.client.result.Future
 import ai.pipecat.client.result.RTVIError
@@ -28,7 +27,10 @@ import ai.pipecat.client.types.Value
 import ai.pipecat.client.types.getOptionsFor
 import ai.pipecat.client.types.getValueFor
 import android.content.Context
+import android.media.AudioDeviceInfo
 import android.media.AudioManager
+import android.os.Build
+import androidx.annotation.RequiresApi
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -126,6 +128,8 @@ class RtcTransport(
     }
 
     override fun connect(authBundle: AuthBundle?): Future<Unit, RTVIError> {
+        setToSpeaker()
+
         val options = transportContext.options.params.config.getOptionsFor(SERVICE_LLM)
         val apiKey = (options?.getValueFor(OPTION_API_KEY) as? Value.Str)?.value
         val model = (options?.getValueFor(OPTION_MODEL) as? Value.Str)?.value
@@ -339,6 +343,12 @@ class RtcTransport(
                 )
             )
         )
+    }
+
+
+    private fun setToSpeaker() {
+        val audioManager = appContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        audioManager.setSpeakerphoneOn(true)
     }
 
     private fun onSessionCreated() {
