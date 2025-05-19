@@ -209,9 +209,8 @@ class ConversationViewModel(
         val currentMessages = _state.value.messages
 
         _state.update { currentState ->
-            val lastIncompleteMessage = currentMessages
-                .filter { it.role == Role.ASSISTANT }
-                .lastOrNull { it.isIncomplete }
+            val indexLastIncompleteMessage = currentMessages.indexOfLast { it.role == Role.ASSISTANT && it.isIncomplete }
+            val lastIncompleteMessage = if (indexLastIncompleteMessage != -1) currentMessages[indexLastIncompleteMessage] else null
 
             val updatedMessages = if (lastIncompleteMessage == null) {
                 val newMessage = UiMessage(
@@ -225,7 +224,9 @@ class ConversationViewModel(
             } else {
                 val newMessage = lastIncompleteMessage.copy(text = lastIncompleteMessage.text + messageDelta)
 
-                currentMessages.dropLastWhile { it.role == Role.ASSISTANT } + newMessage
+                currentMessages.mapIndexed { index, uiMessage ->
+                    if (index == indexLastIncompleteMessage) newMessage else uiMessage
+                }
             }
 
             currentState.copy(messages = updatedMessages)
@@ -233,13 +234,20 @@ class ConversationViewModel(
     }
 
     private fun completeLastTranscript() {
-        val newMessage = _state.value.messages
-                .lastOrNull { it.role == Role.ASSISTANT }
-                ?.copy(isIncomplete = false)
+        val currentMessages = _state.value.messages
+        val indexLastIncompleteMessage = currentMessages.indexOfLast { it.role == Role.ASSISTANT && it.isIncomplete }
+        val lastIncompleteMessage = if (indexLastIncompleteMessage != -1) currentMessages[indexLastIncompleteMessage] else null
 
-        if (newMessage != null) {
-            val updatedMessages = _state.value.messages.dropLast(1) + newMessage
-            _state.update { it.copy(messages = updatedMessages) }
+        if (lastIncompleteMessage != null) {
+            val newMessage = lastIncompleteMessage.copy(isIncomplete = false)
+            val newMessages = currentMessages.mapIndexed { index, uiMessage ->
+                if (index == indexLastIncompleteMessage) {
+                    newMessage
+                }
+                else uiMessage
+            }
+
+            _state.update { it.copy(messages = newMessages) }
         }
     }
 
@@ -297,6 +305,7 @@ class ConversationViewModel(
 
             override fun onUserTalking() {
                 Napier.d(tag = AGENT_TAG) { "User: talking" }
+                completeLastTranscript()
                 _state.update { state ->
                     state.copy(agentState = state.agentState.copy(isUserTalking = true))
                 }
