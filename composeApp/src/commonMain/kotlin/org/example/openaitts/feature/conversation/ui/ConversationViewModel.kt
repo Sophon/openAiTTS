@@ -205,6 +205,10 @@ class ConversationViewModel(
         }
     }
 
+    private fun handleRtcMessage(message: String) {
+        //
+    }
+
     private fun callbacks(): RealtimeAgentCallbacks {
         return object : RealtimeAgentCallbacks {
             override fun onConnect() {

@@ -44,37 +44,20 @@ internal class WebRTCClient (
     private val dataChannel: DataChannel
 
     init {
-        val options = PeerConnectionFactory.Options()
-        val audioDeviceModule = JavaAudioDeviceModule.builder(context)
-            .createAudioDeviceModule()
+        peerConnectionFactory = createPeerConnectionFactory(context)
+        peerConnection = createPeerConnection()
 
-        peerConnectionFactory = PeerConnectionFactory.builder()
-            .setOptions(options)
-            .setAudioDeviceModule(audioDeviceModule)
-            .createPeerConnectionFactory()
-
-        Napier.d(tag = TAG) { "Peer connection factory initialized" }
-
-        val iceServers = ArrayList<PeerConnection.IceServer>()
-        iceServers.add(
-            PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer()
-        )
-
-        val rtcConfig = PeerConnection.RTCConfiguration(iceServers)
-        rtcConfig.sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
-
-        peerConnection =
-            peerConnectionFactory.createPeerConnection(rtcConfig, LoggingPeerConnectionObserver)
-                ?: throw IllegalStateException("Failed to create PeerConnection")
-
-        Napier.d(tag = TAG) { "Peer connection created" }
-
-        audioSource = peerConnectionFactory.createAudioSource(MediaConstraints())
-        localAudioTrack = peerConnectionFactory.createAudioTrack("mic", audioSource)
-        localAudioTrack.setEnabled(true)
+        createAudioSourceAndTrack().let {
+            audioSource = it.first
+            localAudioTrack = it.second
+        }
 
         val sender = peerConnection.addTrack(localAudioTrack)
-        Napier.d(tag = TAG) { if (sender != null) "Adding audio track pc: success" else "Adding audio track pc: failed" }
+        if (sender == null) {
+            Napier.e(tag = TAG) { "Adding audio track: failed" }
+        } else {
+            Napier.d(tag = TAG) { "Adding audio track: success" }
+        }
 
         dataChannel = peerConnection.createDataChannel("oai-events", DataChannel.Init())
         dataChannel.registerObserver(
@@ -191,6 +174,55 @@ internal class WebRTCClient (
         }
     }
 
+    private fun createPeerConnectionFactory(context: Context): PeerConnectionFactory {
+        Napier.d(tag = TAG) { "PeerConnectionFactory: initializing" }
+        val initializationOptions = PeerConnectionFactory.InitializationOptions.builder(context)
+            .setEnableInternalTracer(true)
+            .createInitializationOptions()
+        PeerConnectionFactory.initialize(initializationOptions)
+
+        val audioDeviceModule = JavaAudioDeviceModule.builder(context)
+            .createAudioDeviceModule()
+
+        val options = PeerConnectionFactory.Options()
+
+        val pcFactory = PeerConnectionFactory.builder()
+            .setOptions(options)
+            .setAudioDeviceModule(audioDeviceModule)
+            .createPeerConnectionFactory()
+        Napier.d(tag = TAG) { "PeerConnectionFactory: initialized" }
+
+        return pcFactory
+    }
+
+    private fun createPeerConnection(): PeerConnection {
+        Napier.d(tag = TAG) { "PeerConnection: creating" }
+
+        val iceServers = ArrayList<PeerConnection.IceServer>()
+        iceServers.add(
+            PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer()
+        )
+
+        val rtcConfig = PeerConnection.RTCConfiguration(iceServers)
+        rtcConfig.sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
+
+        val pc = peerConnectionFactory.createPeerConnection(rtcConfig, LoggingPeerConnectionObserver)
+            ?: throw IllegalStateException("Failed to create PeerConnection")
+
+        Napier.d(tag = TAG) { "PeerConnection: created" }
+
+        return pc
+    }
+
+    private fun createAudioSourceAndTrack(): Pair<AudioSource, AudioTrack> {
+        Napier.d(tag = TAG) { "Audio track: creating and adding" }
+        val audioSource = peerConnectionFactory.createAudioSource(MediaConstraints())
+        val localAudioTrack = peerConnectionFactory.createAudioTrack("mic", audioSource)
+        localAudioTrack.setEnabled(true)
+
+        return Pair(audioSource, localAudioTrack)
+    }
+
     private fun createOffer(sdpObserver: SdpObserver) {
         Napier.d(tag = TAG) { "creating offer" }
 
@@ -267,43 +299,43 @@ internal class WebRTCClient (
 
     private object LoggingPeerConnectionObserver: PeerConnection.Observer {
         override fun onSignalingChange(p0: PeerConnection.SignalingState?) {
-            TODO("Not yet implemented")
+            Napier.d(tag = TAG) { "onSignalingChange: $p0" }
         }
 
         override fun onIceConnectionChange(p0: PeerConnection.IceConnectionState?) {
-            TODO("Not yet implemented")
+            Napier.d(tag = TAG) { "onIceConnectionChange: $p0" }
         }
 
         override fun onIceConnectionReceivingChange(p0: Boolean) {
-            TODO("Not yet implemented")
+            Napier.d(tag = TAG) { "onIceConnectionReceivingChange: $p0" }
         }
 
         override fun onIceGatheringChange(p0: PeerConnection.IceGatheringState?) {
-            TODO("Not yet implemented")
+            Napier.d(tag = TAG) { "onIceGatheringChange: $p0" }
         }
 
         override fun onIceCandidate(p0: IceCandidate?) {
-            TODO("Not yet implemented")
+            Napier.d(tag = TAG) { "onIceCandidate: $p0" }
         }
 
         override fun onIceCandidatesRemoved(p0: Array<out IceCandidate>?) {
-            TODO("Not yet implemented")
+            Napier.d(tag = TAG) { "onIceCandidatesRemoved: $p0" }
         }
 
         override fun onAddStream(p0: MediaStream?) {
-            TODO("Not yet implemented")
+            Napier.d(tag = TAG) { "onAddStream: $p0" }
         }
 
         override fun onRemoveStream(p0: MediaStream?) {
-            TODO("Not yet implemented")
+            Napier.d(tag = TAG) { "onRemoveStream: $p0" }
         }
 
         override fun onDataChannel(p0: DataChannel?) {
-            TODO("Not yet implemented")
+            Napier.d(tag = TAG) { "onDataChannel: $p0" }
         }
 
         override fun onRenegotiationNeeded() {
-            TODO("Not yet implemented")
+            Napier.d(tag = TAG) { "onRenegotiationNeeded" }
         }
     }
 }
