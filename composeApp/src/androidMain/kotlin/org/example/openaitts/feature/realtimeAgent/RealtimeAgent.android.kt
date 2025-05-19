@@ -131,7 +131,7 @@ actual class RealtimeAgent actual constructor(
                             "type" to Value.Str("near_field")
                         ),
                         inputAudioTranscription = Value.Object(
-                            "model" to Value.Str("whisper-1")
+                            "model" to Value.Str("gpt-4o-transcribe")
                         ),
                         modalities = listOf("audio", "text"),
                         voice = voice,
