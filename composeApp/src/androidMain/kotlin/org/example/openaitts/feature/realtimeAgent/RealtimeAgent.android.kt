@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import io.github.aakira.napier.Napier
 import org.example.openaitts.core.PlatformContext
+import org.example.openaitts.feature.conversation.domain.models.PROMPT
 import org.example.openaitts.feature.conversation.domain.models.Voice
 import org.example.openaitts.feature.realtimeAgent.data.RtcTransport
 
@@ -122,6 +123,7 @@ actual class RealtimeAgent actual constructor(
                         ),
                     ),
                     initialConfig = OpenAIRealtimeSessionConfig(
+                        instructions = PROMPT,
                         turnDetection = Value.Object(
                             "type" to Value.Str("semantic_vad")
                         ),
