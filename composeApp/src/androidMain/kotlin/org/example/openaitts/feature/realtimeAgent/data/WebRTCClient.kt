@@ -46,7 +46,6 @@ internal class WebRTCClient (
     init {
         peerConnectionFactory = createPeerConnectionFactory(context)
         peerConnection = createPeerConnection()
-
         createAudioSourceAndTrack().let {
             audioSource = it.first
             localAudioTrack = it.second
@@ -142,11 +141,10 @@ internal class WebRTCClient (
 
                         val responseCode = connection.responseCode
                         if (responseCode < 200 || responseCode > 299) {
-                            // Read error response body
                             val errorBody =
                                 connection.errorStream?.bufferedReader()?.use { it.readText() }
                                     ?: "No error body"
-                            Napier.d(tag = TAG) { "Server responded with code $responseCode: $errorBody" }
+                            Napier.e(tag = TAG) { "Server responded with code $responseCode: $errorBody" }
                             throw Exception("HTTP error: $responseCode, body: $errorBody")
                         }
 
@@ -257,21 +255,22 @@ internal class WebRTCClient (
 
     private suspend fun setLocalDescription(sessionDescription: SessionDescription) {
         suspendCancellableCoroutine { continuation ->
-            peerConnection.setRemoteDescription(
+            peerConnection.setLocalDescription(
                 object : SdpObserver {
-                    override fun onCreateSuccess(p0: SessionDescription?) {}
-                    override fun onCreateFailure(p0: String?) {}
+                    override fun onCreateSuccess(sessionDescription: SessionDescription) {}
+                    override fun onCreateFailure(s: String) {}
 
                     override fun onSetSuccess() {
-                        Napier.d(tag = TAG) { "Remote: description set successfully" }
+                        Napier.d(tag = TAG) { "Local description set successfully" }
                         continuation.resume(Unit)
                     }
 
-                    override fun onSetFailure(p0: String?) {
-                        Napier.e(tag = TAG) { "Remote: description set failed: $p0" }
+                    override fun onSetFailure(s: String) {
+                        Napier.e(tag = TAG) { "Failed to set local description: $s" }
+                        continuation.resumeWithException(Exception("Set local description failed: $s"))
                     }
                 },
-                sessionDescription,
+                sessionDescription
             )
         }
     }
@@ -282,6 +281,7 @@ internal class WebRTCClient (
                 object : SdpObserver {
                     override fun onCreateSuccess(sessionDescription: SessionDescription) {}
                     override fun onCreateFailure(s: String) {}
+
                     override fun onSetSuccess() {
                         Napier.d(tag = TAG) { "Remote description set successfully" }
                         continuation.resume(Unit)
