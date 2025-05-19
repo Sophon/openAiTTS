@@ -19,7 +19,8 @@ interface RealtimeAgentCallbacks {
     fun onBackendError(message: String)
     fun onAgentReady()
 
-    fun onAgentTranscriptionReceived(transcript: String)
+    fun onAgentTranscriptionDeltaReceived(transcript: String)
+    fun onAgentTranscriptionDone()
     fun onUserTranscriptionReceived(text: String, isFinal: Boolean)
 
     fun onAgentTalking()

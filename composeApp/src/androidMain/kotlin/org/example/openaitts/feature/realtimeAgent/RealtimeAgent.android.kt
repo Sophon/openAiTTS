@@ -46,8 +46,15 @@ actual class RealtimeAgent actual constructor(
             callbacks.onAgentReady()
         }
 
+        //bot transcription shit
         override fun onBotTTSText(data: MsgServerToClient.Data.BotTTSTextData) {
-            callbacks.onAgentTranscriptionReceived(transcript = data.text)
+            Napier.d(tag = TAG) { "onBotTTSText delta: ${data.text}" }
+            callbacks.onAgentTranscriptionDeltaReceived(transcript = data.text)
+        }
+
+        override fun onBotTTSStopped() {
+            Napier.d(tag = TAG) { "onBotTTSStopped" }
+            callbacks.onAgentTranscriptionDone()
         }
 
         override fun onUserTranscript(data: Transcript) {
@@ -134,7 +141,7 @@ actual class RealtimeAgent actual constructor(
 
 
     companion object {
-        private const val TAG = "RealtimeAgent"
+        private const val TAG = "RealtimeAgentNative"
     }
 }
 

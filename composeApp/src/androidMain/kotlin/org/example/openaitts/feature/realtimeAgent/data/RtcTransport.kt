@@ -52,26 +52,32 @@ class RtcTransport(
         thread.runOnThread {
             when (msg.type) {
                 "error" -> {
+                    Napier.d(tag = TAG) { "Error: ${msg.error?.describe()}" }
                     if (msg.error != null) {
                         transportContext.callbacks.onBackendError(msg.error.describe() ?: "<null>")
                     }
                 }
                 "session.created" -> {
+                    Napier.d(tag = TAG) { "Session: created" }
                     onSessionCreated()
                 }
                 "input_audio_buffer.speech_started" -> {
+                    Napier.d(tag = TAG) { "Input speech: started" }
                     transportContext.callbacks.onUserStartedSpeaking()
                 }
                 "input_audio_buffer.speech_stopped" -> {
+                    Napier.d(tag = TAG) { "Input speech: stopped" }
                     transportContext.callbacks.onUserStoppedSpeaking()
                 }
                 "response.audio_transcript.delta" -> {
                     if (msg.delta != null) {
+                        Napier.d(tag = TAG) { "Delta: ${msg.delta}" }
                         transportContext.callbacks.onBotTTSText(MsgServerToClient.Data.BotTTSTextData(msg.delta))
                     }
                 }
                 "conversation.item.input_audio_transcription.completed" -> {
                     if (msg.transcript != null) {
+                        Napier.d(tag = TAG) { "Input transcription: completed" }
                         transportContext.callbacks.onUserTranscript(
                             Transcript(text = msg.transcript, final = true)
                         )
@@ -103,6 +109,10 @@ class RtcTransport(
                             data = JSON.encodeToJsonElement(data)
                         )
                     )
+                }
+                "response.audio_transcript.done" -> {
+                    Napier.d(tag = TAG) { "Audio transcript: done" }
+                    transportContext.callbacks.onBotTTSStopped()
                 }
                 else -> {
                     Napier.d(tag = TAG) { "Unhandled event of type: ${msg.type}" }
@@ -253,9 +263,7 @@ class RtcTransport(
                                     label = message.label,
                                     type = MsgServerToClient.Type.ActionResponse,
                                     data = JSON.encodeToJsonElement(
-                                        MsgServerToClient.Data.ActionResponse(
-                                            Value.Null
-                                        )
+                                        MsgServerToClient.Data.ActionResponse(Value.Null)
                                     )
                                 )
                             )
@@ -403,7 +411,8 @@ class RtcTransport(
 
     class Factory(private val androidContext: Context) : TransportFactory {
         override fun createTransport(context: TransportContext): Transport {
-            return OpenAIRealtimeWebRTCTransport(context, androidContext)
+//            return OpenAIRealtimeWebRTCTransport(context, androidContext)
+            return RtcTransport(context, androidContext)
         }
     }
 }

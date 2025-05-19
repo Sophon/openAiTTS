@@ -51,7 +51,6 @@ internal fun MessageItem.toUi(): UiMessage {
 
 data class AgentState(
     val isAgentReady: Boolean = false,
-    val isAgentTalking: Boolean = false,
     val isUserTalking: Boolean = false,
     val agentAudioLevel: Float = 0f,
     val userAudioLevel: Float = 0f,

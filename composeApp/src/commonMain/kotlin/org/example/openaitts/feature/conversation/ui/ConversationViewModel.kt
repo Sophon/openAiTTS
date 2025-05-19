@@ -205,12 +205,55 @@ class ConversationViewModel(
         }
     }
 
-    private fun handleRtcMessage(message: String) {
-        //
+    private fun appendTranscriptDelta(messageDelta: String) {
+        val currentMessages = _state.value.messages
+
+        _state.update { currentState ->
+            val lastIncompleteMessage = currentMessages
+                .filter { it.role == Role.ASSISTANT }
+                .lastOrNull { it.isIncomplete }
+
+            val updatedMessages = if (lastIncompleteMessage == null) {
+                val newMessage = UiMessage(
+                    type = MessageItem.Type.MESSAGE,
+                    role = Role.ASSISTANT,
+                    text = messageDelta,
+                    isIncomplete = true
+                )
+
+                currentMessages + newMessage
+            } else {
+                val newMessage = lastIncompleteMessage.copy(text = lastIncompleteMessage.text + messageDelta)
+
+                currentMessages.dropLastWhile { it.role == Role.ASSISTANT } + newMessage
+            }
+
+            currentState.copy(messages = updatedMessages)
+        }
+    }
+
+    private fun completeLastTranscript() {
+        val newMessage = _state.value.messages
+                .lastOrNull { it.role == Role.ASSISTANT }
+                ?.copy(isIncomplete = false)
+
+        if (newMessage != null) {
+            val updatedMessages = _state.value.messages.dropLast(1) + newMessage
+            _state.update { it.copy(messages = updatedMessages) }
+        }
     }
 
     private fun callbacks(): RealtimeAgentCallbacks {
         return object : RealtimeAgentCallbacks {
+            //region UNUSED
+            override fun onAgentTalking() {
+                Napier.d(tag = AGENT_TAG) { "Agent: talking" }
+            }
+            override fun onAgentTalkingDone() {
+                Napier.d(tag = AGENT_TAG) { "Agent: talking done" }
+            }
+            //endregion
+
             override fun onConnect() {
                 Napier.d(tag = AGENT_TAG) { "Agent: connected" }
             }
@@ -237,34 +280,19 @@ class ConversationViewModel(
                 }
             }
 
-            override fun onAgentTranscriptionReceived(transcript: String) {
-                Napier.d(tag = AGENT_TAG) { "Agent: transcription = $transcript" }
+            override fun onAgentTranscriptionDeltaReceived(transcriptDelta: String) {
+                Napier.d(tag = AGENT_TAG) { "Agent: transcription = $transcriptDelta" }
+                appendTranscriptDelta(messageDelta = transcriptDelta)
+            }
 
-                val newMessage = UiMessage(
-                    type = MessageItem.Type.MESSAGE,
-                    role = Role.ASSISTANT,
-                    text = transcript,
-                )
-                _state.update { it.copy(messages = it.messages + newMessage) }
+            override fun onAgentTranscriptionDone() {
+                Napier.d(tag = AGENT_TAG) { "Agent: transcription = DONE" }
+                completeLastTranscript()
             }
 
             override fun onUserTranscriptionReceived(text: String, isFinal: Boolean) {
                 Napier.d(tag = AGENT_TAG) { "User: = $text" }
                 addUserMessage(text = text)
-            }
-
-            override fun onAgentTalking() {
-                Napier.d(tag = AGENT_TAG) { "Agent: talking" }
-                _state.update { state ->
-                    state.copy(agentState = state.agentState.copy(isAgentTalking = true))
-                }
-            }
-
-            override fun onAgentTalkingDone() {
-                Napier.d(tag = AGENT_TAG) { "Agent: talking done" }
-                _state.update { state ->
-                    state.copy(agentState = state.agentState.copy(isAgentTalking = false))
-                }
             }
 
             override fun onUserTalking() {
@@ -285,4 +313,4 @@ class ConversationViewModel(
 }
 
 private const val TAG = "ConversationViewModel"
-private const val AGENT_TAG = "RealtimeAgent"
+private const val AGENT_TAG = "RealtimeAgentVM"
