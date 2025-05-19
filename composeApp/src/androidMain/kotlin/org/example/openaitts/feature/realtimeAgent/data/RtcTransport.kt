@@ -72,18 +72,23 @@ class RtcTransport(
                     transportContext.callbacks.onUserStoppedSpeaking()
                 }
                 "response.audio_transcript.delta" -> {
+                    Napier.d(tag = TAG) { "Transcription: delta" }
                     if (msg.delta != null) {
                         Napier.d(tag = TAG) { "Delta: ${msg.delta}" }
                         transportContext.callbacks.onBotTTSText(MsgServerToClient.Data.BotTTSTextData(msg.delta))
                     }
                 }
                 "conversation.item.input_audio_transcription.completed" -> {
+                    Napier.d(tag = TAG) { "Transcription: DONE" }
                     if (msg.transcript != null) {
                         Napier.d(tag = TAG) { "Input transcription: completed" }
                         transportContext.callbacks.onUserTranscript(
                             Transcript(text = msg.transcript, final = true)
                         )
                     }
+                }
+                "conversation.item.input_audio_transcription.delta" -> {
+                    Napier.d(tag = TAG) { "Transcription: delta ${msg.delta}" }
                 }
                 "output_audio_buffer.started" -> {
                     transportContext.callbacks.onBotStartedSpeaking()
