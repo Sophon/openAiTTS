@@ -14,19 +14,11 @@ data class ConversationViewState(
     val messages: List<UiMessage> = listOf(),
     val selectedVoice: Voice = Voice.ALLOY,
     val isVoiceSelectorDialogVisible: Boolean = false,
-    val recordingStatus: RecordingStatus = RecordingStatus.IDLE,
 
     val agentState: AgentState = AgentState(),
 ) {
-    val isSendEnabled: Boolean get() = query.isNotBlank()
     val selectedVoiceInitials: String get() = selectedVoice.name.take(3)
     val isVoiceChangeEnabled: Boolean get() = agentState.isAgentReady.not()
-
-    enum class RecordingStatus {
-        DISABLED,
-        IDLE,
-        RECORDING,
-    }
 }
 
 data class UiMessage(

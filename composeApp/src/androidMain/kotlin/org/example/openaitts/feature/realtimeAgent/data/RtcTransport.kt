@@ -27,10 +27,7 @@ import ai.pipecat.client.types.Value
 import ai.pipecat.client.types.getOptionsFor
 import ai.pipecat.client.types.getValueFor
 import android.content.Context
-import android.media.AudioDeviceInfo
 import android.media.AudioManager
-import android.os.Build
-import androidx.annotation.RequiresApi
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch

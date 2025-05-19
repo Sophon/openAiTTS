@@ -47,7 +47,6 @@ actual class RealtimeAgent actual constructor(
             callbacks.onAgentReady()
         }
 
-        //bot transcription shit
         override fun onBotTTSText(data: MsgServerToClient.Data.BotTTSTextData) {
             Napier.d(tag = TAG) { "onBotTTSText delta: ${data.text}" }
             callbacks.onAgentTranscriptionDeltaReceived(transcript = data.text)

@@ -1,8 +1,6 @@
 package org.example.openaitts
 
 import android.app.Application
-import android.app.LocaleManager
-import android.content.Context
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import org.example.openaitts.core.PlatformContext
