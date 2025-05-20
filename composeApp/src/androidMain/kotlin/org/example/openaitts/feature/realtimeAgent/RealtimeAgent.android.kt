@@ -8,6 +8,7 @@ import ai.pipecat.client.openai_realtime_webrtc.OpenAIRealtimeSessionConfig
 import ai.pipecat.client.openai_realtime_webrtc.OpenAIRealtimeWebRTCTransport
 import ai.pipecat.client.transport.AuthBundle
 import ai.pipecat.client.transport.MsgServerToClient
+import ai.pipecat.client.transport.Transport
 import ai.pipecat.client.transport.TransportContext
 import ai.pipecat.client.types.ServiceConfig
 import ai.pipecat.client.types.Tracks
@@ -74,8 +75,15 @@ actual class RealtimeAgent actual constructor(
 
     private var apiKey: String = ""
     private var voice: Voice = Voice.ECHO
-    private val transportContext by lazy {
-        object : TransportContext {
+    private var transportContext: TransportContext? = null
+    private var transport: Transport? = null
+
+    actual fun start(apiKey: String, voice: Voice) {
+        this.apiKey = apiKey
+        this.voice = voice
+        val authBundle = AuthBundle(data = "")
+
+        transportContext = object : TransportContext {
             override val options: RTVIClientOptions = createOptions(apiKey, voice.name.lowercase())
             override val callbacks: RTVIEventCallbacks = eventCallbacks
             override val thread = ThreadRef.forCurrent()
@@ -84,21 +92,14 @@ actual class RealtimeAgent actual constructor(
                 Napier.d(tag = TAG) { "onMessage of $msg" }
             }
         }
-    }
-    private val transport by lazy {
-        RtcTransport.Factory(platformContext.get()).createTransport(context = transportContext)
-    }
 
-    actual fun start(apiKey: String, voice: Voice) {
-        this.apiKey = apiKey
-        this.voice = voice
-        val authBundle = AuthBundle(data = "")
+        transport = RtcTransport.Factory(platformContext.get()).createTransport(context = transportContext!!)
 
-        transport.connect(authBundle)
+        transport!!.connect(authBundle)
     }
 
     actual fun stop() {
-        transport.disconnect()
+        transport?.disconnect()
     }
 
     actual fun toggleMic(newValue: Boolean) {
@@ -118,7 +119,7 @@ actual class RealtimeAgent actual constructor(
                     initialMessages = listOf(
                         LLMContextMessage(
                             role = "user",
-                            content = "Tell me your name"
+                            content = "say hi to me"
                         ),
                     ),
                     initialConfig = OpenAIRealtimeSessionConfig(
@@ -134,6 +135,7 @@ actual class RealtimeAgent actual constructor(
                         ),
                         modalities = listOf("audio", "text"),
                         voice = voice,
+//                        voice = voice,
                     )
                 )
             )
