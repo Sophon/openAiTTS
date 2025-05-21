@@ -108,6 +108,7 @@ actual class RealtimeAgent actual constructor(
 
     private fun enableMic(isEnabled: Boolean) {
         Napier.d(tag = TAG) { "toggling mic: $isEnabled" }
+        transport?.enableMic(isEnabled)
     }
 
     private fun createOptions(apiKey: String, voice: String): RTVIClientOptions {
@@ -117,9 +118,13 @@ actual class RealtimeAgent actual constructor(
                 config = OpenAIRealtimeWebRTCTransport.buildConfig(
                     apiKey = apiKey,
                     initialMessages = listOf(
+//                        LLMContextMessage(
+//                            role = "user",
+//                            content = "say hi to me"
+//                        ),
                         LLMContextMessage(
                             role = "user",
-                            content = "say hi to me"
+                            content = "tell me a short poem"
                         ),
                     ),
                     initialConfig = OpenAIRealtimeSessionConfig(

@@ -22,6 +22,7 @@ import org.webrtc.MediaConstraints
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
+import org.webrtc.RtpTransceiver
 import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.audio.JavaAudioDeviceModule
@@ -40,7 +41,7 @@ internal class WebRTCClient (
     private val peerConnection: PeerConnection
     private val negotiateJob = AtomicReference<Job?>(null)
     private val audioSource: AudioSource
-    private val localAudioTrack: AudioTrack
+    private var remoteAudioTrack: AudioTrack? = null
     private val dataChannel: DataChannel
 
     init {
@@ -48,10 +49,10 @@ internal class WebRTCClient (
         peerConnection = createPeerConnection()
         createAudioSourceAndTrack().let {
             audioSource = it.first
-            localAudioTrack = it.second
+            remoteAudioTrack = it.second
         }
 
-        val sender = peerConnection.addTrack(localAudioTrack)
+        val sender = peerConnection.addTrack(remoteAudioTrack)
         if (sender == null) {
             Napier.e(tag = TAG) { "Adding audio track: failed" }
         } else {
@@ -84,7 +85,7 @@ internal class WebRTCClient (
     suspend fun dispose() {
         try {
             negotiateJob.get()?.cancelAndJoin()
-            localAudioTrack.dispose()
+            remoteAudioTrack?.dispose()
             audioSource.dispose()
             dataChannel.dispose()
             peerConnection.close()
@@ -95,10 +96,11 @@ internal class WebRTCClient (
     }
 
     fun setAudioTrackEnabled(enabled: Boolean) {
-        localAudioTrack.setEnabled(enabled)
+        Napier.d(tag = TAG) { "is enabled = $enabled" }
+        remoteAudioTrack?.setEnabled(enabled)
     }
 
-    fun isAudioTrackEnabled(): Boolean = localAudioTrack.enabled()
+    fun isAudioTrackEnabled(): Boolean = (remoteAudioTrack?.enabled() == null)
 
     fun <T> sendDataMessage(serializer: KSerializer<T>, msg: T) {
         val msgString = JSON_INSTANCE.encodeToString(serializer, msg)
@@ -204,7 +206,59 @@ internal class WebRTCClient (
         val rtcConfig = PeerConnection.RTCConfiguration(iceServers)
         rtcConfig.sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
 
-        val pc = peerConnectionFactory.createPeerConnection(rtcConfig, LoggingPeerConnectionObserver)
+        val pc = peerConnectionFactory.createPeerConnection(
+            rtcConfig,
+            object : PeerConnection.Observer {
+                override fun onSignalingChange(p0: PeerConnection.SignalingState?) {
+                    Napier.d(tag = TAG) { "onSignalingChange: $p0" }
+                }
+
+                override fun onIceConnectionChange(p0: PeerConnection.IceConnectionState?) {
+                    Napier.d(tag = TAG) { "onIceConnectionChange: $p0" }
+                }
+
+                override fun onIceConnectionReceivingChange(p0: Boolean) {
+                    Napier.d(tag = TAG) { "onIceConnectionReceivingChange: $p0" }
+                }
+
+                override fun onIceGatheringChange(p0: PeerConnection.IceGatheringState?) {
+                    Napier.d(tag = TAG) { "onIceGatheringChange: $p0" }
+                }
+
+                override fun onIceCandidate(p0: IceCandidate?) {
+                    Napier.d(tag = TAG) { "onIceCandidate: $p0" }
+                }
+
+                override fun onIceCandidatesRemoved(p0: Array<out IceCandidate>?) {
+                    Napier.d(tag = TAG) { "onIceCandidatesRemoved: $p0" }
+                }
+
+                override fun onAddStream(p0: MediaStream?) {
+                    Napier.d(tag = TAG) { "onAddStream: $p0" }
+                }
+
+                override fun onRemoveStream(p0: MediaStream?) {
+                    Napier.d(tag = TAG) { "onRemoveStream: $p0" }
+                }
+
+                override fun onDataChannel(p0: DataChannel?) {
+                    Napier.d(tag = TAG) { "onDataChannel: $p0" }
+                }
+
+                override fun onRenegotiationNeeded() {
+                    Napier.d(tag = TAG) { "onRenegotiationNeeded" }
+                }
+
+                override fun onTrack(transceiver: RtpTransceiver?) {
+                    val mediaStreamTrack = transceiver?.receiver?.track()
+                    if (mediaStreamTrack is AudioTrack) {
+                        remoteAudioTrack = mediaStreamTrack
+                        remoteAudioTrack?.setEnabled(true)
+                        Napier.d(tag = TAG) { "Remote audio track: received and attached" }
+                    }
+                }
+            }
+        )
             ?: throw IllegalStateException("Failed to create PeerConnection")
 
         Napier.d(tag = TAG) { "PeerConnection: created" }
@@ -295,48 +349,6 @@ internal class WebRTCClient (
                 },
                 sessionDescription
             )
-        }
-    }
-
-    private object LoggingPeerConnectionObserver: PeerConnection.Observer {
-        override fun onSignalingChange(p0: PeerConnection.SignalingState?) {
-            Napier.d(tag = TAG) { "onSignalingChange: $p0" }
-        }
-
-        override fun onIceConnectionChange(p0: PeerConnection.IceConnectionState?) {
-            Napier.d(tag = TAG) { "onIceConnectionChange: $p0" }
-        }
-
-        override fun onIceConnectionReceivingChange(p0: Boolean) {
-            Napier.d(tag = TAG) { "onIceConnectionReceivingChange: $p0" }
-        }
-
-        override fun onIceGatheringChange(p0: PeerConnection.IceGatheringState?) {
-            Napier.d(tag = TAG) { "onIceGatheringChange: $p0" }
-        }
-
-        override fun onIceCandidate(p0: IceCandidate?) {
-            Napier.d(tag = TAG) { "onIceCandidate: $p0" }
-        }
-
-        override fun onIceCandidatesRemoved(p0: Array<out IceCandidate>?) {
-            Napier.d(tag = TAG) { "onIceCandidatesRemoved: $p0" }
-        }
-
-        override fun onAddStream(p0: MediaStream?) {
-            Napier.d(tag = TAG) { "onAddStream: $p0" }
-        }
-
-        override fun onRemoveStream(p0: MediaStream?) {
-            Napier.d(tag = TAG) { "onRemoveStream: $p0" }
-        }
-
-        override fun onDataChannel(p0: DataChannel?) {
-            Napier.d(tag = TAG) { "onDataChannel: $p0" }
-        }
-
-        override fun onRenegotiationNeeded() {
-            Napier.d(tag = TAG) { "onRenegotiationNeeded" }
         }
     }
 }
