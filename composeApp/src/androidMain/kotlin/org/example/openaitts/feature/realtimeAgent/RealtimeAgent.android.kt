@@ -118,14 +118,14 @@ actual class RealtimeAgent actual constructor(
                 config = OpenAIRealtimeWebRTCTransport.buildConfig(
                     apiKey = apiKey,
                     initialMessages = listOf(
-//                        LLMContextMessage(
-//                            role = "user",
-//                            content = "say hi to me"
-//                        ),
                         LLMContextMessage(
                             role = "user",
-                            content = "tell me a short poem"
+                            content = "say hi to me"
                         ),
+//                        LLMContextMessage(
+//                            role = "user",
+//                            content = "tell me a short poem"
+//                        ),
                     ),
                     initialConfig = OpenAIRealtimeSessionConfig(
 //                        instructions = PROMPT,

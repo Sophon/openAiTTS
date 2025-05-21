@@ -73,31 +73,38 @@ class ConversationViewModel: ViewModel() {
         _state.update { it.copy(messages = it.messages + newMessage) }
     }
 
+    private var transcriptBuffer = ""
     private fun appendTranscriptDelta(messageDelta: String) {
-        val currentMessages = _state.value.messages.swap()
+        if (transcriptionHasBeenReceived()) {
+            val currentMessages = _state.value.messages
+            val messageDelta = transcriptBuffer + messageDelta
+            transcriptBuffer = ""
 
-        _state.update { currentState ->
-            val indexLastIncompleteMessage = currentMessages.indexOfLast { it.role == Role.ASSISTANT && it.isIncomplete }
-            val lastIncompleteMessage = if (indexLastIncompleteMessage != -1) currentMessages[indexLastIncompleteMessage] else null
+            _state.update { currentState ->
+                val indexLastIncompleteMessage = currentMessages.indexOfLast { it.role == Role.ASSISTANT && it.isIncomplete }
+                val lastIncompleteMessage = if (indexLastIncompleteMessage != -1) currentMessages[indexLastIncompleteMessage] else null
 
-            val updatedMessages = if (lastIncompleteMessage == null) {
-                val newMessage = UiMessage(
-                    type = MessageItem.Type.MESSAGE,
-                    role = Role.ASSISTANT,
-                    text = messageDelta,
-                    isIncomplete = true
-                )
+                val updatedMessages = if (lastIncompleteMessage == null) {
+                    val newMessage = UiMessage(
+                        type = MessageItem.Type.MESSAGE,
+                        role = Role.ASSISTANT,
+                        text = messageDelta,
+                        isIncomplete = true
+                    )
 
-                currentMessages + newMessage
-            } else {
-                val newMessage = lastIncompleteMessage.copy(text = lastIncompleteMessage.text + messageDelta)
+                    currentMessages + newMessage
+                } else {
+                    val newMessage = lastIncompleteMessage.copy(text = lastIncompleteMessage.text + messageDelta)
 
-                currentMessages.mapIndexed { index, uiMessage ->
-                    if (index == indexLastIncompleteMessage) newMessage else uiMessage
+                    currentMessages.mapIndexed { index, uiMessage ->
+                        if (index == indexLastIncompleteMessage) newMessage else uiMessage
+                    }
                 }
-            }
 
-            currentState.copy(messages = updatedMessages)
+                currentState.copy(messages = updatedMessages)
+            }
+        } else {
+            transcriptBuffer += messageDelta
         }
     }
 
@@ -119,21 +126,14 @@ class ConversationViewModel: ViewModel() {
         }
     }
 
-    private fun List<UiMessage>.swap(): List<UiMessage> {
-        if (this.size < 3) return this
+    private fun transcriptionHasBeenReceived(): Boolean {
+        val messages = _state.value.messages
 
-        val lastButOneIndex = this.lastIndex - 1
-
-        return if (this.last().role == Role.USER && this[lastButOneIndex].role == Role.ASSISTANT && this[lastButOneIndex].isIncomplete) {
-            val messageList = this.toMutableList()
-            val lastUser = messageList.last()
-            val lastAssistant = messageList.lastOrNull { it.role == Role.ASSISTANT }!!
-
-            messageList[messageList.lastIndex - 1] = lastUser
-            messageList[messageList.lastIndex] = lastAssistant
-
-            messageList
-        } else this
+        return when {
+            messages.isEmpty() -> true
+            (messages.size == 1 && messages.last().role == Role.ASSISTANT && messages.last().isIncomplete) -> true
+            else -> (messages.last().role == Role.USER || messages.last().isIncomplete)
+        }
     }
 
     private fun callbacks(): RealtimeAgentCallbacks {
