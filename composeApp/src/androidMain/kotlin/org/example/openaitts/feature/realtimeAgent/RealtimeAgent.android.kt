@@ -128,7 +128,7 @@ actual class RealtimeAgent actual constructor(
                         ),
                     ),
                     initialConfig = OpenAIRealtimeSessionConfig(
-                        instructions = PROMPT,
+//                        instructions = PROMPT,
                         turnDetection = Value.Object(
                             "type" to Value.Str("semantic_vad")
                         ),
@@ -140,7 +140,6 @@ actual class RealtimeAgent actual constructor(
                         ),
                         modalities = listOf("audio", "text"),
                         voice = voice,
-//                        voice = voice,
                     )
                 )
             )

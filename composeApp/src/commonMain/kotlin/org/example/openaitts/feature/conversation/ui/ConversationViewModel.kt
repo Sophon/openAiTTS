@@ -74,7 +74,7 @@ class ConversationViewModel: ViewModel() {
     }
 
     private fun appendTranscriptDelta(messageDelta: String) {
-        val currentMessages = _state.value.messages
+        val currentMessages = _state.value.messages.swap()
 
         _state.update { currentState ->
             val indexLastIncompleteMessage = currentMessages.indexOfLast { it.role == Role.ASSISTANT && it.isIncomplete }
@@ -117,6 +117,23 @@ class ConversationViewModel: ViewModel() {
 
             _state.update { it.copy(messages = newMessages) }
         }
+    }
+
+    private fun List<UiMessage>.swap(): List<UiMessage> {
+        if (this.size < 3) return this
+
+        val lastButOneIndex = this.lastIndex - 1
+
+        return if (this.last().role == Role.USER && this[lastButOneIndex].role == Role.ASSISTANT && this[lastButOneIndex].isIncomplete) {
+            val messageList = this.toMutableList()
+            val lastUser = messageList.last()
+            val lastAssistant = messageList.lastOrNull { it.role == Role.ASSISTANT }!!
+
+            messageList[messageList.lastIndex - 1] = lastUser
+            messageList[messageList.lastIndex] = lastAssistant
+
+            messageList
+        } else this
     }
 
     private fun callbacks(): RealtimeAgentCallbacks {
